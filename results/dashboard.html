@@ -1,0 +1,394 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Coloring Algorithm Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .timestamp {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .chart-container h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        
+        .metrics-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .metrics-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .metrics-table tr:hover {
+            background: #f0f0f0;
+        }
+        
+        .metric-value {
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .valid-coloring {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .invalid-coloring {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .algorithm-label {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 0.85em;
+            margin-right: 10px;
+        }
+        
+        .algo-wp {
+            background: #e7d4f5;
+            color: #6f42c1;
+        }
+        
+        .algo-ds {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .algo-sa {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .algo-dp {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .info-box strong {
+            color: #667eea;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-card .value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-card .label {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 Graph Coloring Algorithm Dashboard</h1>
+            <p class="timestamp">Generated: 2025-11-18 07:19:51</p>
+        </header>
+        
+        <div class="info-box">
+            <strong>💡 This dashboard provides:</strong>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li>Real-time algorithm performance comparison</li>
+                <li>Advanced metrics analysis (20+ metrics)</li>
+                <li>Interactive visualization of results</li>
+                <li>Theoretical bounds verification</li>
+                <li>Quality assessment and trade-off analysis</li>
+            </ul>
+        </div>
+        
+        <div class="dashboard-grid">
+            <div class="chart-container">
+                <h3>🎯 Colors Used Comparison</h3>
+                <div id="colorsChart"></div>
+            </div>
+            
+            <div class="chart-container">
+                <h3>⚡ Execution Time Comparison</h3>
+                <div id="timeChart"></div>
+            </div>
+            
+            <div class="chart-container">
+                <h3>📊 Chromatic Efficiency</h3>
+                <div id="efficiencyChart"></div>
+            </div>
+            
+            <div class="chart-container">
+                <h3>🎯 Achromatic Power (Solution Quality)</h3>
+                <div id="achroChart"></div>
+            </div>
+        </div>
+        
+        <div class="chart-container full-width">
+            <h3>📈 Detailed Metrics Table</h3>
+            <table class="metrics-table">
+                <thead>
+                    <tr>
+                        <th>Graph</th>
+                        <th>Algorithm</th>
+                        <th>Colors</th>
+                        <th>Conflicts</th>
+                        <th>Valid</th>
+                        <th>Time (ms)</th>
+                        <th>Efficiency</th>
+                        <th>Imbalance</th>
+                        <th>Achromatic Power</th>
+                    </tr>
+                </thead>
+                <tbody id="metricsBody">
+                </tbody>
+            </table>
+        </div>
+        
+        <footer>
+            <p>Graph Coloring Analysis | Algorithm Analysis & Design Final Project</p>
+            <p>Algorithms: Welsh-Powell | D-Satur | Simulated Annealing | Dynamic Programming</p>
+        </footer>
+    </div>
+    
+    <script>
+        const resultsData = [{"algorithm": "Welsh-Powell", "execution_time_ms": 0.0938179991862853, "num_colors": 3, "conflicts": 0, "is_valid": true, "color_imbalance": 0.3, "color_utilization_percent": 30.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 0.6666666666666666, "largest_color_class": 4, "color_class_variance": 0.22222222222222224, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 10, "graph_edges": 15, "graph_density": 0.3333333333333333, "max_degree": 3, "avg_degree": 3.0, "chromatic_lower_bound": 2, "chromatic_upper_bound": 4, "fractional_chromatic_approx": 2.5, "degeneracy": 3, "color_classes_independent": true, "graph_name": "Petersen"}, {"algorithm": "D-Satur", "execution_time_ms": 0.09821599996939767, "num_colors": 3, "conflicts": 0, "is_valid": true, "color_imbalance": 0.3, "color_utilization_percent": 30.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 0.6666666666666666, "largest_color_class": 4, "color_class_variance": 0.22222222222222224, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 10, "graph_edges": 15, "graph_density": 0.3333333333333333, "max_degree": 3, "avg_degree": 3.0, "chromatic_lower_bound": 2, "chromatic_upper_bound": 4, "fractional_chromatic_approx": 2.5, "degeneracy": 3, "color_classes_independent": true, "graph_name": "Petersen"}, {"algorithm": "Simulated Annealing", "execution_time_ms": 1162.9106998443604, "num_colors": 4, "conflicts": 0, "is_valid": true, "color_imbalance": 0.8, "color_utilization_percent": 40.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 0.5, "largest_color_class": 4, "color_class_variance": 0.75, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 10, "graph_edges": 15, "graph_density": 0.3333333333333333, "max_degree": 3, "avg_degree": 3.0, "chromatic_lower_bound": 2, "chromatic_upper_bound": 4, "fractional_chromatic_approx": 2.5, "degeneracy": 3, "color_classes_independent": true, "graph_name": "Petersen"}, {"algorithm": "Dynamic Programming", "execution_time_ms": 0.08617399998911424, "num_colors": 3, "conflicts": 0, "is_valid": true, "color_imbalance": 0.3, "color_utilization_percent": 30.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 1.0, "largest_color_class": 4, "color_class_variance": 0.22222222222222224, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 10, "graph_edges": 15, "graph_density": 0.3333333333333333, "max_degree": 3, "avg_degree": 3.0, "chromatic_lower_bound": 2, "chromatic_upper_bound": 4, "fractional_chromatic_approx": 2.5, "degeneracy": 3, "color_classes_independent": true, "graph_name": "Petersen"}, {"algorithm": "Welsh-Powell", "execution_time_ms": 0.13733000014326535, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 1.7647058823529411, "color_utilization_percent": 14.705882352941178, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 1.0, "largest_color_class": 14, "color_class_variance": 22.96, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 34, "graph_edges": 78, "graph_density": 0.13903743315508021, "max_degree": 17, "avg_degree": 4.588235294117647, "chromatic_lower_bound": 5, "chromatic_upper_bound": 18, "fractional_chromatic_approx": 34.0, "degeneracy": 4, "color_classes_independent": true, "graph_name": "Karate Club"}, {"algorithm": "D-Satur", "execution_time_ms": 0.2757129996098229, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 1.3235294117647058, "color_utilization_percent": 14.705882352941178, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 1.0, "largest_color_class": 11, "color_class_variance": 10.959999999999999, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 34, "graph_edges": 78, "graph_density": 0.13903743315508021, "max_degree": 17, "avg_degree": 4.588235294117647, "chromatic_lower_bound": 5, "chromatic_upper_bound": 18, "fractional_chromatic_approx": 34.0, "degeneracy": 4, "color_classes_independent": true, "graph_name": "Karate Club"}, {"algorithm": "Simulated Annealing", "execution_time_ms": 3827.763319015503, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 1.1764705882352942, "color_utilization_percent": 14.705882352941178, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 1.0, "largest_color_class": 11, "color_class_variance": 8.16, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 34, "graph_edges": 78, "graph_density": 0.13903743315508021, "max_degree": 17, "avg_degree": 4.588235294117647, "chromatic_lower_bound": 5, "chromatic_upper_bound": 18, "fractional_chromatic_approx": 34.0, "degeneracy": 4, "color_classes_independent": true, "graph_name": "Karate Club"}, {"algorithm": "Welsh-Powell", "execution_time_ms": 0.08682499992573867, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 0.5, "color_utilization_percent": 25.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 0.8, "largest_color_class": 5, "color_class_variance": 0.4, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 20, "graph_edges": 67, "graph_density": 0.3526315789473684, "max_degree": 11, "avg_degree": 6.7, "chromatic_lower_bound": 4, "chromatic_upper_bound": 12, "fractional_chromatic_approx": 2.857142857142857, "degeneracy": 5, "color_classes_independent": true, "graph_name": "Random G(20,0.3)"}, {"algorithm": "D-Satur", "execution_time_ms": 0.1437030005035922, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 0.5, "color_utilization_percent": 25.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 0.8, "largest_color_class": 5, "color_class_variance": 0.4, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 20, "graph_edges": 67, "graph_density": 0.3526315789473684, "max_degree": 11, "avg_degree": 6.7, "chromatic_lower_bound": 4, "chromatic_upper_bound": 12, "fractional_chromatic_approx": 2.857142857142857, "degeneracy": 5, "color_classes_independent": true, "graph_name": "Random G(20,0.3)"}, {"algorithm": "Simulated Annealing", "execution_time_ms": 3136.5506649017334, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 0.5, "color_utilization_percent": 25.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 0.8, "largest_color_class": 5, "color_class_variance": 0.4, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 20, "graph_edges": 67, "graph_density": 0.3526315789473684, "max_degree": 11, "avg_degree": 6.7, "chromatic_lower_bound": 4, "chromatic_upper_bound": 12, "fractional_chromatic_approx": 2.857142857142857, "degeneracy": 5, "color_classes_independent": true, "graph_name": "Random G(20,0.3)"}, {"algorithm": "Welsh-Powell", "execution_time_ms": 0.04610799987858627, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 0.0, "color_utilization_percent": 100.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 1.0, "largest_color_class": 1, "color_class_variance": 0.0, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 5, "graph_edges": 10, "graph_density": 1.0, "max_degree": 4, "avg_degree": 4.0, "chromatic_lower_bound": 5, "chromatic_upper_bound": 5, "fractional_chromatic_approx": 5.0, "degeneracy": 4, "color_classes_independent": true, "graph_name": "Complete K(5)"}, {"algorithm": "D-Satur", "execution_time_ms": 0.03542800004652236, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 0.0, "color_utilization_percent": 100.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 1.0, "largest_color_class": 1, "color_class_variance": 0.0, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 5, "graph_edges": 10, "graph_density": 1.0, "max_degree": 4, "avg_degree": 4.0, "chromatic_lower_bound": 5, "chromatic_upper_bound": 5, "fractional_chromatic_approx": 5.0, "degeneracy": 4, "color_classes_independent": true, "graph_name": "Complete K(5)"}, {"algorithm": "Simulated Annealing", "execution_time_ms": 862.5702857971191, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 0.0, "color_utilization_percent": 100.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 1.0, "largest_color_class": 1, "color_class_variance": 0.0, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 5, "graph_edges": 10, "graph_density": 1.0, "max_degree": 4, "avg_degree": 4.0, "chromatic_lower_bound": 5, "chromatic_upper_bound": 5, "fractional_chromatic_approx": 5.0, "degeneracy": 4, "color_classes_independent": true, "graph_name": "Complete K(5)"}, {"algorithm": "Dynamic Programming", "execution_time_ms": 0.28145400028734, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 0.0, "color_utilization_percent": 100.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 1.0, "largest_color_class": 1, "color_class_variance": 0.0, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 5, "graph_edges": 10, "graph_density": 1.0, "max_degree": 4, "avg_degree": 4.0, "chromatic_lower_bound": 5, "chromatic_upper_bound": 5, "fractional_chromatic_approx": 5.0, "degeneracy": 4, "color_classes_independent": true, "graph_name": "Complete K(5)"}];
+        
+        // Function to organize data by metric
+        function getDataByMetric(metric) {
+            const data = {};
+            resultsData.forEach(result => {
+                if (!data[result.algorithm]) {
+                    data[result.algorithm] = [];
+                }
+                data[result.algorithm].push(result[metric]);
+            });
+            return data;
+        }
+        
+        // Function to get graph names
+        function getGraphNames() {
+            const graphs = new Set();
+            resultsData.forEach(r => graphs.add(r.graph_name));
+            return Array.from(graphs);
+        }
+        
+        // Plot 1: Colors Used
+        const colorsByAlgo = getDataByMetric('num_colors');
+        const graphNames = getGraphNames();
+        
+        const colorsTrace = [];
+        Object.keys(colorsByAlgo).forEach((algo, idx) => {
+            colorsTrace.push({
+                name: algo,
+                x: graphNames,
+                y: colorsByAlgo[algo],
+                type: 'bar'
+            });
+        });
+        
+        Plotly.newPlot('colorsChart', colorsTrace, {
+            barmode: 'group',
+            xaxis: { title: 'Graph' },
+            yaxis: { title: 'Number of Colors' },
+            hovermode: 'closest'
+        }, {responsive: true});
+        
+        // Plot 2: Execution Time
+        const timeByAlgo = getDataByMetric('execution_time_ms');
+        const timeTrace = [];
+        Object.keys(timeByAlgo).forEach((algo, idx) => {
+            timeTrace.push({
+                name: algo,
+                x: graphNames,
+                y: timeByAlgo[algo],
+                type: 'scatter',
+                mode: 'lines+markers'
+            });
+        });
+        
+        Plotly.newPlot('timeChart', timeTrace, {
+            xaxis: { title: 'Graph' },
+            yaxis: { title: 'Time (milliseconds)', type: 'log' },
+            hovermode: 'closest'
+        }, {responsive: true});
+        
+        // Plot 3: Efficiency
+        const effByAlgo = getDataByMetric('chromatic_efficiency');
+        const effTrace = [];
+        Object.keys(effByAlgo).forEach((algo, idx) => {
+            effTrace.push({
+                name: algo,
+                x: graphNames,
+                y: effByAlgo[algo],
+                type: 'scatter',
+                mode: 'lines+markers',
+                fill: 'tozeroy'
+            });
+        });
+        
+        Plotly.newPlot('efficiencyChart', effTrace, {
+            xaxis: { title: 'Graph' },
+            yaxis: { title: 'Efficiency (0-1)', range: [0, 1.1] },
+            hovermode: 'closest'
+        }, {responsive: true});
+        
+        // Plot 4: Achromatic Power
+        const achrByAlgo = getDataByMetric('achromatic_power');
+        const achrTrace = [];
+        Object.keys(achrByAlgo).forEach((algo, idx) => {
+            achrTrace.push({
+                name: algo,
+                x: graphNames,
+                y: achrByAlgo[algo],
+                type: 'scatter',
+                mode: 'markers',
+                marker: { size: 10 }
+            });
+        });
+        
+        Plotly.newPlot('achroChart', achrTrace, {
+            xaxis: { title: 'Graph' },
+            yaxis: { title: 'Achromatic Power (0-1)', range: [-0.1, 1.1] },
+            hovermode: 'closest'
+        }, {responsive: true});
+        
+        // Populate metrics table
+        const tableBody = document.getElementById('metricsBody');
+        resultsData.forEach(result => {
+            const row = document.createElement('tr');
+            const valid = result.is_valid ? 
+                '<span class="valid-coloring">✓ Valid</span>' : 
+                '<span class="invalid-coloring">✗ Invalid</span>';
+            
+            row.innerHTML = `
+                <td>${result.graph_name}</td>
+                <td><span class="algorithm-label algo-${result.algorithm.includes('Welsh') ? 'wp' : result.algorithm.includes('D-Satur') ? 'ds' : result.algorithm.includes('Simulated') ? 'sa' : 'dp'}">${result.algorithm}</span></td>
+                <td class="metric-value">${result.num_colors}</td>
+                <td>${result.conflicts}</td>
+                <td>${valid}</td>
+                <td>${result.execution_time_ms.toFixed(2)}</td>
+                <td>${(result.chromatic_efficiency * 100).toFixed(1)}%</td>
+                <td>${result.color_imbalance.toFixed(3)}</td>
+                <td>${result.achromatic_power.toFixed(3)}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    </script>
+</body>
+</html>
+    
