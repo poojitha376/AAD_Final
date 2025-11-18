@@ -13,13 +13,14 @@ help:
 	@echo "Graph Coloring Project - Available Commands"
 	@echo "============================================"
 	@echo ""
-	@echo "make install      - Install project dependencies"
-	@echo "make test         - Run correctness tests on known graphs"
-	@echo "make benchmark    - Run full benchmarking suite"
-	@echo "make metrics      - Run advanced metrics analysis"
-	@echo "make dashboard    - Generate interactive dashboard (BONUS)"
-	@echo "make clean        - Remove generated files and cache"
-	@echo "make all          - Install, test, benchmark, metrics, dashboard"
+	@echo "make install            - Install project dependencies"
+	@echo "make test               - Run correctness tests on known graphs"
+	@echo "make benchmark          - Run full benchmarking suite"
+	@echo "make metrics            - Run advanced metrics analysis"
+	@echo "make dashboard          - Generate interactive dashboard"
+	@echo "make dashboard-advanced - Generate ADVANCED dashboard (3D, edge cases, 15+ charts)"
+	@echo "make clean              - Remove generated files and cache"
+	@echo "make all                - Install, test, benchmark, metrics, dashboard"
 	@echo ""
 
 install:
@@ -60,6 +61,14 @@ dashboard:
 	$(PYTHON) $(BENCH_DIR)/dashboard.py
 	@echo "✓ Dashboard created: $(RESULTS_DIR)/dashboard.html"
 	@echo "Open in browser to view interactive visualizations"
+
+dashboard-advanced:
+	@echo "Generating ADVANCED dashboard (3D, edge cases, animations)..."
+	@echo "===================================="
+	@mkdir -p $(RESULTS_DIR)
+	$(PYTHON) $(BENCH_DIR)/dashboard_advanced.py
+	@echo "✓ Advanced dashboard created: $(RESULTS_DIR)/dashboard_advanced.html"
+	@echo "Larger file with 15+ charts, 3D plots, and edge case analysis"
 
 # Clean up generated files
 clean:
