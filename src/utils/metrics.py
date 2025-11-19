@@ -428,6 +428,7 @@ class GraphMetrics:
 def compute_all_metrics(G: nx.Graph, coloring: Dict[int, int], 
                        algorithm_name: str = "Unknown",
                        execution_time_ms: float = 0.0,
+                       memory_mb: float = 0.0,
                        optimal_chromatic: Optional[int] = None) -> Dict:
     """
     Compute comprehensive metrics for a coloring solution.
@@ -437,6 +438,7 @@ def compute_all_metrics(G: nx.Graph, coloring: Dict[int, int],
         coloring: Vertex to color assignment
         algorithm_name: Name of algorithm used
         execution_time_ms: Execution time in milliseconds
+        memory_mb: Peak memory usage in megabytes
         optimal_chromatic: Known optimal chromatic number (optional)
     
     Returns:
@@ -450,6 +452,7 @@ def compute_all_metrics(G: nx.Graph, coloring: Dict[int, int],
         # Basic metrics
         'algorithm': algorithm_name,
         'execution_time_ms': execution_time_ms,
+        'memory_mb': memory_mb,
         
         # Solution quality
         'num_colors': num_colors,

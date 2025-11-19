@@ -1,159 +1,4 @@
-#!/usr/bin/env python3
-"""
-ADVANCED Interactive Dashboard Generator with 3D, Animations, and Edge Cases
-Generates professional multi-page HTML dashboard with:
-- 15+ interactive visualizations
-- 3D surface plots showing scalability
-- Animated convergence charts
-- Edge case analysis (empty, single node, cliques, bipartite, etc.)
-"""
 
-import sys
-import os
-import json
-import math
-from datetime import datetime
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-
-import networkx as nx
-from src.algorithms.welshpowell import welsh_powell
-from src.algorithms.dsatur import dsatur
-from src.algorithms.simulated_annealing import simulated_annealing
-from src.algorithms.dynamic_programming import find_chromatic_number
-from src.utils.graph_generator import generate_erdos_renyi_graph, generate_petersen_graph
-from src.utils.graph_loader import load_karate_graph
-from src.utils.metrics import compute_all_metrics
-
-
-def generate_complete_graph(n):
-    """Generate complete graph K(n)."""
-    return nx.complete_graph(n)
-
-
-def generate_edge_case_graphs():
-    """Generate graphs representing edge cases."""
-    edge_cases = {}
-    
-    # Empty graph
-    G = nx.Graph()
-    G.add_nodes_from(range(5))
-    edge_cases['Empty (5 nodes, 0 edges)'] = G
-    
-    # Single vertex
-    G = nx.Graph()
-    G.add_node(0)
-    edge_cases['Single Vertex'] = G
-    
-    # Two isolated vertices
-    G = nx.Graph()
-    G.add_nodes_from([0, 1])
-    edge_cases['Two Isolated'] = G
-    
-    # Complete graph (clique)
-    edge_cases['Complete K(5)'] = nx.complete_graph(5)
-    
-    # Complete graph K(7)
-    edge_cases['Complete K(7)'] = nx.complete_graph(7)
-    
-    # Bipartite (complete)
-    edge_cases['Bipartite K(3,3)'] = nx.complete_bipartite_graph(3, 3)
-    
-    # Star graph
-    edge_cases['Star (5 edges)'] = nx.star_graph(5)
-    
-    # Cycle graph (even)
-    edge_cases['Cycle C(6)'] = nx.cycle_graph(6)
-    
-    # Cycle graph (odd)
-    edge_cases['Cycle C(5)'] = nx.cycle_graph(5)
-    
-    # Wheel graph
-    edge_cases['Wheel W(6)'] = nx.wheel_graph(6)
-    
-    # Path graph
-    edge_cases['Path P(8)'] = nx.path_graph(8)
-    
-    # Ladder graph
-    edge_cases['Ladder L(4)'] = nx.ladder_graph(4)
-    
-    return edge_cases
-
-
-def test_algorithm_on_graph(G, algorithm_name):
-    """Test a single algorithm on a graph."""
-    import time
-    import tracemalloc
-    
-    try:
-        # Skip Dynamic Programming for large graphs (>10 nodes) due to exponential complexity
-        if algorithm_name == "Dynamic Programming" and len(G.nodes()) > 10:
-            return {'coloring': {}, 'num_colors': 0, 'time': 0.0, 'memory_mb': 0.0, 'error': 'Skipped (graph too large for DP)'}
-        
-        # Start memory and time tracking
-        tracemalloc.start()
-        start_time = time.time()
-        
-        if algorithm_name == "Welsh-Powell":
-            coloring, k = welsh_powell(G)
-            result = {'coloring': coloring, 'num_colors': k, 'error': None}
-        elif algorithm_name == "D-Satur":
-            coloring, k = dsatur(G)
-            result = {'coloring': coloring, 'num_colors': k, 'error': None}
-        elif algorithm_name == "Simulated Annealing":
-            coloring, k, history, t = simulated_annealing(G, 5)
-            result = {'coloring': coloring, 'num_colors': k, 'history': history, 'error': None}
-        elif algorithm_name == "Dynamic Programming":
-            k, coloring = find_chromatic_number(G)
-            result = {'coloring': coloring, 'num_colors': k, 'error': None}
-        else:
-            tracemalloc.stop()
-            return {'coloring': {}, 'num_colors': 0, 'time': 0.0, 'memory_mb': 0.0, 'error': 'Unknown algorithm'}
-            
-        # End tracking and capture metrics
-        end_time = time.time()
-        current_memory, peak_memory = tracemalloc.get_traced_memory()
-        tracemalloc.stop()
-        
-        result['time'] = (end_time - start_time) * 1000  # Convert to milliseconds
-        result['memory_mb'] = peak_memory / (1024 * 1024)  # Convert bytes to megabytes
-        return result
-        
-    except Exception as e:
-        # Ensure tracemalloc is stopped if an error occurs
-        if tracemalloc.is_tracing():
-            tracemalloc.stop()
-        return {'coloring': {}, 'num_colors': 0, 'time': 0.0, 'memory_mb': 0.0, 'error': str(e)}
-    
-    return {'coloring': {}, 'num_colors': 0, 'time': 0.0, 'memory_mb': 0.0, 'error': 'Unknown algorithm'}
-
-
-def generate_3d_data():
-    """Generate 3D data: nodes vs density vs colors."""
-    sizes = [8, 12, 16, 20, 25, 30]  # Reduced sizes for reasonable execution times
-    densities = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]  # Keep density range
-    algorithms = ["Welsh-Powell", "D-Satur", "Simulated Annealing"]
-    
-    data_3d = {algo: {'x': [], 'y': [], 'z': []} for algo in algorithms}
-    
-    for size in sizes:
-        for density in densities:
-            G = generate_erdos_renyi_graph(size, density)
-            
-            for algo in algorithms:
-                result = test_algorithm_on_graph(G, algo)
-                if result['error'] is None:
-                    data_3d[algo]['x'].append(size)
-                    data_3d[algo]['y'].append(density)
-                    data_3d[algo]['z'].append(result['num_colors'])
-    
-    return data_3d
-
-
-def generate_advanced_html(results_data):
-    """Generate advanced HTML dashboard with tabs, 3D plots, animations."""
-    
-    html = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -414,7 +259,7 @@ def generate_advanced_html(results_data):
         <header>
             <h1>🎨 Advanced Graph Coloring Analysis Dashboard</h1>
             <p class="subtitle">Interactive Visualizations with 3D Analysis, Animations & Edge Cases</p>
-            <p class="subtitle">📊 Generated: """ + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + """</p>
+            <p class="subtitle">📊 Generated: 2025-11-19 11:40:03</p>
         </header>
         
         <div class="tabs">
@@ -449,10 +294,6 @@ def generate_advanced_html(results_data):
                 <div class="chart-container">
                     <h3>🎯 Colors Used - All Graphs</h3>
                     <div id="colorsChart"></div>
-                    <div id="graphMeta" style="margin-top:12px; font-size:0.9em; color:#444;
-                                display:flex; gap:12px; flex-wrap:wrap; align-items:flex-start;">
-                        <!-- Populated by JavaScript: compact graph metadata (nodes / edges / density) -->
-                    </div>
                 </div>
                 
                 <div class="chart-container">
@@ -579,9 +420,9 @@ def generate_advanced_html(results_data):
             evt.currentTarget.classList.add("active");
         }
         
-        const resultsData = """ + json.dumps(results_data['regular']) + """;
-        const edgeCaseData = """ + json.dumps(results_data['edge_cases']) + """;
-        const data3d = """ + json.dumps(results_data['3d']) + """;
+        const resultsData = [{"algorithm": "Welsh-Powell", "execution_time_ms": 0.0, "num_colors": 3, "conflicts": 0, "is_valid": true, "color_imbalance": 0.3, "color_utilization_percent": 30.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 0.6666666666666666, "largest_color_class": 4, "color_class_variance": 0.22222222222222224, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 10, "graph_edges": 15, "graph_density": 0.3333333333333333, "max_degree": 3, "avg_degree": 3.0, "chromatic_lower_bound": 2, "chromatic_upper_bound": 4, "fractional_chromatic_approx": 2.5, "degeneracy": 3, "color_classes_independent": true, "graph_name": "Petersen", "graph_description": "Benchmark: 10 nodes, 15 edges (Tricky)"}, {"algorithm": "D-Satur", "execution_time_ms": 0.0, "num_colors": 3, "conflicts": 0, "is_valid": true, "color_imbalance": 0.3, "color_utilization_percent": 30.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 0.6666666666666666, "largest_color_class": 4, "color_class_variance": 0.22222222222222224, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 10, "graph_edges": 15, "graph_density": 0.3333333333333333, "max_degree": 3, "avg_degree": 3.0, "chromatic_lower_bound": 2, "chromatic_upper_bound": 4, "fractional_chromatic_approx": 2.5, "degeneracy": 3, "color_classes_independent": true, "graph_name": "Petersen", "graph_description": "Benchmark: 10 nodes, 15 edges (Tricky)"}, {"algorithm": "Simulated Annealing", "execution_time_ms": 0.0, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 1.0, "color_utilization_percent": 50.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 0.4, "largest_color_class": 3, "color_class_variance": 0.8, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 10, "graph_edges": 15, "graph_density": 0.3333333333333333, "max_degree": 3, "avg_degree": 3.0, "chromatic_lower_bound": 2, "chromatic_upper_bound": 4, "fractional_chromatic_approx": 2.5, "degeneracy": 3, "color_classes_independent": true, "graph_name": "Petersen", "graph_description": "Benchmark: 10 nodes, 15 edges (Tricky)"}, {"algorithm": "Dynamic Programming", "execution_time_ms": 0.0, "num_colors": 3, "conflicts": 0, "is_valid": true, "color_imbalance": 0.3, "color_utilization_percent": 30.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 0.6666666666666666, "largest_color_class": 4, "color_class_variance": 0.22222222222222224, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 10, "graph_edges": 15, "graph_density": 0.3333333333333333, "max_degree": 3, "avg_degree": 3.0, "chromatic_lower_bound": 2, "chromatic_upper_bound": 4, "fractional_chromatic_approx": 2.5, "degeneracy": 3, "color_classes_independent": true, "graph_name": "Petersen", "graph_description": "Benchmark: 10 nodes, 15 edges (Tricky)"}, {"algorithm": "Welsh-Powell", "execution_time_ms": 0.0, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 1.7647058823529411, "color_utilization_percent": 14.705882352941178, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 1.0, "largest_color_class": 14, "color_class_variance": 22.96, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 34, "graph_edges": 78, "graph_density": 0.13903743315508021, "max_degree": 17, "avg_degree": 4.588235294117647, "chromatic_lower_bound": 5, "chromatic_upper_bound": 18, "fractional_chromatic_approx": 34.0, "degeneracy": 4, "color_classes_independent": true, "graph_name": "Karate Club", "graph_description": "Real-World: 34 nodes, Social Network"}, {"algorithm": "D-Satur", "execution_time_ms": 0.0, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 1.3235294117647058, "color_utilization_percent": 14.705882352941178, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 1.0, "largest_color_class": 11, "color_class_variance": 10.959999999999999, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 34, "graph_edges": 78, "graph_density": 0.13903743315508021, "max_degree": 17, "avg_degree": 4.588235294117647, "chromatic_lower_bound": 5, "chromatic_upper_bound": 18, "fractional_chromatic_approx": 34.0, "degeneracy": 4, "color_classes_independent": true, "graph_name": "Karate Club", "graph_description": "Real-World: 34 nodes, Social Network"}, {"algorithm": "Simulated Annealing", "execution_time_ms": 0.0, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 1.0294117647058825, "color_utilization_percent": 14.705882352941178, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 1.0, "largest_color_class": 10, "color_class_variance": 6.56, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 34, "graph_edges": 78, "graph_density": 0.13903743315508021, "max_degree": 17, "avg_degree": 4.588235294117647, "chromatic_lower_bound": 5, "chromatic_upper_bound": 18, "fractional_chromatic_approx": 34.0, "degeneracy": 4, "color_classes_independent": true, "graph_name": "Karate Club", "graph_description": "Real-World: 34 nodes, Social Network"}, {"algorithm": "Dynamic Programming", "execution_time_ms": 0.0, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 1.7647058823529411, "color_utilization_percent": 14.705882352941178, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 1.0, "largest_color_class": 14, "color_class_variance": 22.96, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 34, "graph_edges": 78, "graph_density": 0.13903743315508021, "max_degree": 17, "avg_degree": 4.588235294117647, "chromatic_lower_bound": 5, "chromatic_upper_bound": 18, "fractional_chromatic_approx": 34.0, "degeneracy": 4, "color_classes_independent": true, "graph_name": "Karate Club", "graph_description": "Real-World: 34 nodes, Social Network"}, {"algorithm": "Welsh-Powell", "execution_time_ms": 0.0, "num_colors": 4, "conflicts": 0, "is_valid": true, "color_imbalance": 0.4, "color_utilization_percent": 20.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 0.75, "largest_color_class": 6, "color_class_variance": 0.5, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 20, "graph_edges": 57, "graph_density": 0.3, "max_degree": 9, "avg_degree": 5.7, "chromatic_lower_bound": 3, "chromatic_upper_bound": 10, "fractional_chromatic_approx": 2.857142857142857, "degeneracy": 4, "color_classes_independent": true, "graph_name": "Random G(20,0.3)", "graph_description": "Synthetic: 20 nodes, Random Connections"}, {"algorithm": "D-Satur", "execution_time_ms": 0.0, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 1.25, "color_utilization_percent": 25.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 0.6, "largest_color_class": 6, "color_class_variance": 2.8, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 20, "graph_edges": 57, "graph_density": 0.3, "max_degree": 9, "avg_degree": 5.7, "chromatic_lower_bound": 3, "chromatic_upper_bound": 10, "fractional_chromatic_approx": 2.857142857142857, "degeneracy": 4, "color_classes_independent": true, "graph_name": "Random G(20,0.3)", "graph_description": "Synthetic: 20 nodes, Random Connections"}, {"algorithm": "Simulated Annealing", "execution_time_ms": 0.0, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 0.5, "color_utilization_percent": 25.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 0.6, "largest_color_class": 5, "color_class_variance": 0.8, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 20, "graph_edges": 57, "graph_density": 0.3, "max_degree": 9, "avg_degree": 5.7, "chromatic_lower_bound": 3, "chromatic_upper_bound": 10, "fractional_chromatic_approx": 2.857142857142857, "degeneracy": 4, "color_classes_independent": true, "graph_name": "Random G(20,0.3)", "graph_description": "Synthetic: 20 nodes, Random Connections"}, {"algorithm": "Dynamic Programming", "execution_time_ms": 0.0, "num_colors": 4, "conflicts": 0, "is_valid": true, "color_imbalance": 0.4, "color_utilization_percent": 20.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 0.75, "largest_color_class": 6, "color_class_variance": 0.5, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 20, "graph_edges": 57, "graph_density": 0.3, "max_degree": 9, "avg_degree": 5.7, "chromatic_lower_bound": 3, "chromatic_upper_bound": 10, "fractional_chromatic_approx": 2.857142857142857, "degeneracy": 4, "color_classes_independent": true, "graph_name": "Random G(20,0.3)", "graph_description": "Synthetic: 20 nodes, Random Connections"}, {"algorithm": "Welsh-Powell", "execution_time_ms": 0.0, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 0.0, "color_utilization_percent": 100.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 1.0, "largest_color_class": 1, "color_class_variance": 0.0, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 5, "graph_edges": 10, "graph_density": 1.0, "max_degree": 4, "avg_degree": 4.0, "chromatic_lower_bound": 5, "chromatic_upper_bound": 5, "fractional_chromatic_approx": 5.0, "degeneracy": 4, "color_classes_independent": true, "graph_name": "Complete K(5)", "graph_description": "Sanity Check: 5 nodes, Fully Connected"}, {"algorithm": "D-Satur", "execution_time_ms": 0.0, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 0.0, "color_utilization_percent": 100.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 1.0, "largest_color_class": 1, "color_class_variance": 0.0, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 5, "graph_edges": 10, "graph_density": 1.0, "max_degree": 4, "avg_degree": 4.0, "chromatic_lower_bound": 5, "chromatic_upper_bound": 5, "fractional_chromatic_approx": 5.0, "degeneracy": 4, "color_classes_independent": true, "graph_name": "Complete K(5)", "graph_description": "Sanity Check: 5 nodes, Fully Connected"}, {"algorithm": "Simulated Annealing", "execution_time_ms": 0.0, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 0.0, "color_utilization_percent": 100.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 1.0, "largest_color_class": 1, "color_class_variance": 0.0, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 5, "graph_edges": 10, "graph_density": 1.0, "max_degree": 4, "avg_degree": 4.0, "chromatic_lower_bound": 5, "chromatic_upper_bound": 5, "fractional_chromatic_approx": 5.0, "degeneracy": 4, "color_classes_independent": true, "graph_name": "Complete K(5)", "graph_description": "Sanity Check: 5 nodes, Fully Connected"}, {"algorithm": "Dynamic Programming", "execution_time_ms": 0.0, "num_colors": 5, "conflicts": 0, "is_valid": true, "color_imbalance": 0.0, "color_utilization_percent": 100.0, "conflict_density_percent": 0.0, "achromatic_power": 1.0, "chromatic_efficiency": 1.0, "largest_color_class": 1, "color_class_variance": 0.0, "conflict_vertex_stats": {"num_conflict_vertices": 0, "percent_conflict": 0.0, "avg_degree_conflict": 0.0, "max_degree_conflict": 0}, "graph_nodes": 5, "graph_edges": 10, "graph_density": 1.0, "max_degree": 4, "avg_degree": 4.0, "chromatic_lower_bound": 5, "chromatic_upper_bound": 5, "fractional_chromatic_approx": 5.0, "degeneracy": 4, "color_classes_independent": true, "graph_name": "Complete K(5)", "graph_description": "Sanity Check: 5 nodes, Fully Connected"}];
+        const edgeCaseData = [{"graph_name": "Empty (5 nodes, 0 edges)", "graph_nodes": 5, "graph_edges": 0, "error": null, "has_errors": false, "wp_colors": 1, "ds_colors": 1, "sa_colors": 4, "dp_colors": 1}, {"graph_name": "Single Vertex", "graph_nodes": 1, "graph_edges": 0, "error": null, "has_errors": false, "wp_colors": 1, "ds_colors": 1, "sa_colors": 1, "dp_colors": 1}, {"graph_name": "Two Isolated", "graph_nodes": 2, "graph_edges": 0, "error": null, "has_errors": false, "wp_colors": 1, "ds_colors": 1, "sa_colors": 1, "dp_colors": 1}, {"graph_name": "Complete K(5)", "graph_nodes": 5, "graph_edges": 10, "error": null, "has_errors": false, "wp_colors": 5, "ds_colors": 5, "sa_colors": 5, "dp_colors": 5}, {"graph_name": "Complete K(7)", "graph_nodes": 7, "graph_edges": 21, "error": null, "has_errors": false, "wp_colors": 7, "ds_colors": 7, "sa_colors": 5, "dp_colors": 7}, {"graph_name": "Bipartite K(3,3)", "graph_nodes": 6, "graph_edges": 9, "error": null, "has_errors": false, "wp_colors": 2, "ds_colors": 2, "sa_colors": 5, "dp_colors": 2}, {"graph_name": "Star (5 edges)", "graph_nodes": 6, "graph_edges": 5, "error": null, "has_errors": false, "wp_colors": 2, "ds_colors": 2, "sa_colors": 4, "dp_colors": 2}, {"graph_name": "Cycle C(6)", "graph_nodes": 6, "graph_edges": 6, "error": null, "has_errors": false, "wp_colors": 2, "ds_colors": 2, "sa_colors": 3, "dp_colors": 2}, {"graph_name": "Cycle C(5)", "graph_nodes": 5, "graph_edges": 5, "error": null, "has_errors": false, "wp_colors": 3, "ds_colors": 3, "sa_colors": 4, "dp_colors": 3}, {"graph_name": "Wheel W(6)", "graph_nodes": 6, "graph_edges": 10, "error": null, "has_errors": false, "wp_colors": 4, "ds_colors": 4, "sa_colors": 5, "dp_colors": 4}, {"graph_name": "Path P(8)", "graph_nodes": 8, "graph_edges": 7, "error": null, "has_errors": false, "wp_colors": 2, "ds_colors": 2, "sa_colors": 5, "dp_colors": 2}, {"graph_name": "Ladder L(4)", "graph_nodes": 8, "graph_edges": 10, "error": null, "has_errors": false, "wp_colors": 2, "ds_colors": 2, "sa_colors": 5, "dp_colors": 2}];
+        const data3d = {"Welsh-Powell": {"x": [5, 5, 5, 5, 5, 5, 8, 8, 8, 8, 8, 8, 10, 10, 10, 10, 10, 10, 12, 12, 12, 12, 12, 12, 15, 15, 15, 15, 15, 15, 20, 20, 20, 20, 20, 20], "y": [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7], "z": [2, 2, 3, 2, 3, 4, 3, 3, 3, 4, 4, 6, 3, 2, 3, 4, 5, 4, 3, 3, 4, 4, 5, 8, 3, 4, 4, 6, 6, 7, 3, 5, 5, 6, 7, 9]}, "D-Satur": {"x": [5, 5, 5, 5, 5, 5, 8, 8, 8, 8, 8, 8, 10, 10, 10, 10, 10, 10, 12, 12, 12, 12, 12, 12, 15, 15, 15, 15, 15, 15, 20, 20, 20, 20, 20, 20], "y": [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7], "z": [2, 2, 3, 2, 3, 4, 3, 3, 3, 4, 4, 6, 3, 2, 3, 4, 5, 4, 3, 3, 4, 4, 5, 8, 3, 4, 4, 4, 5, 7, 3, 4, 5, 6, 6, 9]}, "Simulated Annealing": {"x": [5, 5, 5, 5, 5, 5, 8, 8, 8, 8, 8, 8, 10, 10, 10, 10, 10, 10, 12, 12, 12, 12, 12, 12, 15, 15, 15, 15, 15, 15, 20, 20, 20, 20, 20, 20], "y": [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7], "z": [3, 3, 4, 3, 4, 5, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5]}};
         
         // Map for graph descriptions
         const graphDescMap = {};
@@ -603,36 +444,6 @@ def generate_advanced_html(results_data):
             resultsData.forEach(r => graphs.add(r.graph_name));
             return Array.from(graphs);
         }
-
-        // Build a compact metadata map for each graph (nodes/edges/density/max degree)
-        const graphMeta = {};
-        resultsData.forEach(r => {
-            if (!graphMeta[r.graph_name]) {
-                graphMeta[r.graph_name] = {
-                    nodes: r.graph_nodes,
-                    edges: r.graph_edges,
-                    density: r.graph_density,
-                    max_degree: r.max_degree,
-                    avg_degree: r.avg_degree
-                };
-            }
-        });
-
-        // Render compact metadata panel under the Colors chart
-        function renderGraphMetaPanel() {
-            const container = document.getElementById('graphMeta');
-            if (!container) return;
-            const items = Object.keys(graphMeta).map(name => {
-                const m = graphMeta[name];
-                return `<div style="background:#fff;border-radius:8px;padding:8px 10px;border:1px solid #eee;box-shadow:0 1px 3px rgba(0,0,0,0.05);min-width:160px;">
-                            <div style="font-weight:700;color:#667eea;margin-bottom:6px;">${name}</div>
-                            <div style="line-height:1.2;color:#333;"><strong>Nodes:</strong> ${m.nodes}</div>
-                            <div style="line-height:1.2;color:#333;"><strong>Edges:</strong> ${m.edges}</div>
-                            <div style="line-height:1.2;color:#333;"><strong>Density:</strong> ${m.density.toFixed(3)}</div>
-                        </div>`;
-            });
-            container.innerHTML = items.join('');
-        }
         
         const graphNames = getGraphNames();
 
@@ -648,8 +459,8 @@ def generate_advanced_html(results_data):
                 y: colorsByAlgo[algo],
                 type: 'bar',
                 marker: {color: ['#667eea', '#764ba2', '#f093fb', '#4facfe'][Object.keys(colorsByAlgo).sort().indexOf(algo)]},
-                // include per-point text with graph metadata for hover (nodes/edges/density)
-                text: graphNames.map(g => `Nodes: ${graphMeta[g] ? graphMeta[g].nodes : 'N/A'}<br>Edges: ${graphMeta[g] ? graphMeta[g].edges : 'N/A'}<br>Density: ${graphMeta[g] ? graphMeta[g].density.toFixed(3) : 'N/A'}`),
+                // UPDATED: Add description to hover text
+                text: graphNames.map(name => graphDescMap[name]), 
                 hovertemplate: '<b>%{x}</b><br>%{text}<br>Colors: %{y}<extra></extra>'
             });
         });
@@ -660,11 +471,8 @@ def generate_advanced_html(results_data):
             hovermode: 'closest',
             height: 400
         }, {responsive: true});
-
-        // Call function to render metadata panel
-        renderGraphMetaPanel();
         
-        // Chart 2: Execution Time - Enhanced with robust axis handling
+        // Chart 2: Execution Time
         const timeByAlgo = getDataByMetric('execution_time_ms');
         const timeTrace = [];
         Object.keys(timeByAlgo).sort().forEach(algo => {
@@ -675,59 +483,17 @@ def generate_advanced_html(results_data):
                 type: 'scatter',
                 mode: 'lines+markers',
                 line: {width: 3},
-                // include metadata on hover for clarity
-                text: graphNames.map(g => `Nodes: ${graphMeta[g] ? graphMeta[g].nodes : 'N/A'}<br>Edges: ${graphMeta[g] ? graphMeta[g].edges : 'N/A'}<br>Density: ${graphMeta[g] ? graphMeta[g].density.toFixed(3) : 'N/A'}`),
-                hovertemplate: '<b>%{x}</b><br>%{text}<br>Time: %{y} ms<extra></extra>'
+                // UPDATED: Add description to hover text
+                text: graphNames.map(name => graphDescMap[name]), 
+                hovertemplate: '<b>%{x}</b><br>%{text}<br>Time: %{y:.2f} ms<extra></extra>'
             });
         });
-
-        // Choose appropriate y-axis scaling for execution time
-        function renderTimeChart() {
-            const allTimes = [].concat(...Object.values(timeByAlgo));
-            const maxTime = allTimes.length ? Math.max(...allTimes) : 0;
-            const nonZero = allTimes.filter(t => t > 0);
-            const minNonZero = nonZero.length ? Math.min(...nonZero) : null;
-
-            let yaxisConfig = {title: 'Time (ms)'};
-            let annotations = [];
-
-            if (maxTime === 0) {
-                // All zeros -> show a small linear range so chart is visible and annotate
-                yaxisConfig.type = 'linear';
-                yaxisConfig.range = [0, 1];
-                yaxisConfig.title = 'Time (ms) — all recorded as 0 (below timer resolution)';
-                annotations.push({
-                    xref: 'paper', yref: 'paper', x: 0.5, y: -0.18,
-                    text: 'Note: All execution times recorded as 0 ms — likely below timing resolution.<br>This is equivalent to wall-clock time but measured in milliseconds.',
-                    showarrow: false,
-                    font: {size: 11, color: '#555'},
-                    xanchor: 'center'
-                });
-            } else if (minNonZero !== null && maxTime / minNonZero > 1000) {
-                // wide range -> use log scale
-                yaxisConfig.type = 'log';
-                yaxisConfig.title = 'Time (ms, log scale)';
-            } else if (maxTime < 1) {
-                // all very small values -> linear with small range and nice ticks
-                yaxisConfig.type = 'linear';
-                yaxisConfig.range = [0, Math.max(1, maxTime * 1.2)];
-                yaxisConfig.tickformat = '.3f';
-            } else {
-                // reasonable values -> linear and small headroom
-                yaxisConfig.type = 'linear';
-                yaxisConfig.range = [0, maxTime * 1.2];
-            }
-
-            Plotly.newPlot('timeChart', timeTrace, {
-                xaxis: {title: 'Graph Type'},
-                yaxis: yaxisConfig,
-                annotations: annotations,
-                hovermode: 'closest',
-                height: 400
-            }, {responsive: true});
-        }
-
-        renderTimeChart();
+        Plotly.newPlot('timeChart', timeTrace, {
+            xaxis: {title: 'Graph Type'},
+            yaxis: {title: 'Time (ms)', type: 'log'},
+            hovermode: 'closest',
+            height: 400
+        }, {responsive: true});
         
         // Chart 3: Efficiency
         const effByAlgo = getDataByMetric('chromatic_efficiency');
@@ -836,35 +602,22 @@ def generate_advanced_html(results_data):
             height: 350
         }, {responsive: true});
         
-        // Chart 8: Speed Ranking - Enhanced for zero times
+        // Chart 8: Speed Ranking
         const avgTimeByAlgo = {};
         Object.keys(timeByAlgo).forEach(algo => {
             avgTimeByAlgo[algo] = timeByAlgo[algo].reduce((a, b) => a + b, 0) / timeByAlgo[algo].length;
         });
         
-        const avgTimes = Object.values(avgTimeByAlgo);
-        const maxAvgTime = Math.max(...avgTimes);
-        
         const speedTrace = [{
             x: Object.keys(avgTimeByAlgo),
             y: Object.values(avgTimeByAlgo),
             type: 'bar',
-            marker: {color: Object.values(avgTimeByAlgo), colorscale: 'Reds'},
-            text: Object.values(avgTimeByAlgo).map(t => t.toFixed(4) + ' ms'),
-            textposition: 'auto'
+            marker: {color: Object.values(avgTimeByAlgo), colorscale: 'Reds'}
         }];
-        
-        let speedYaxis = {title: 'Average Time (ms)'};
-        if (maxAvgTime === 0) {
-            speedYaxis.range = [0, 1];
-            speedYaxis.title = 'Average Time (ms) — all ≈0';
-        } else if (maxAvgTime < 0.001) {
-            speedYaxis.tickformat = '.4f';
-        }
         
         Plotly.newPlot('speedRankChart', speedTrace, {
             xaxis: {title: 'Algorithm'},
-            yaxis: speedYaxis,
+            yaxis: {title: 'Average Time (ms)'},
             height: 350
         }, {responsive: true});
         
@@ -1029,158 +782,3 @@ def generate_advanced_html(results_data):
     </script>
 </body>
 </html>
-"""
-    return html
-
-
-def main():
-    """Main dashboard generation function."""
-    print("=" * 80)
-    print("🎨 ADVANCED INTERACTIVE DASHBOARD GENERATOR")
-    print("=" * 80)
-    
-    # Generate regular results
-    print("\nGenerating results for standard graphs...")
-    regular_results = []
-    
-    graphs_to_test = {
-        # Small graphs where DP can run efficiently (≤10 nodes)
-        'Tiny Random G(8,0.3)': generate_erdos_renyi_graph(8, 0.3),
-        'Small Dense G(10,0.4)': generate_erdos_renyi_graph(10, 0.4),
-        'Complete K(6)': generate_complete_graph(6),
-        'Small Sparse G(9,0.2)': generate_erdos_renyi_graph(9, 0.2),
-        
-        # Medium/Large graphs for other algorithms (DP will be skipped)
-        'Medium Random G(30,0.2)': generate_erdos_renyi_graph(30, 0.2),
-        'Medium Dense G(40,0.3)': generate_erdos_renyi_graph(40, 0.3), 
-        'Large Sparse G(60,0.1)': generate_erdos_renyi_graph(60, 0.1),
-        'Dense Graph G(35,0.4)': generate_erdos_renyi_graph(35, 0.4),
-        'Karate Club': load_karate_graph(),
-        'Complete K(12)': generate_complete_graph(12),
-    }
-
-    # --- UPDATED: Define Graph Descriptions ---
-    graph_descriptions = {
-        'Tiny Random G(8,0.3)': "Random: 8 nodes, Medium density (30%) - DP Included",
-        'Small Dense G(10,0.4)': "Random: 10 nodes, Dense (40%) - DP Included",
-        'Complete K(6)': "Complete: 6 nodes, Fully Connected - DP Included",
-        'Small Sparse G(9,0.2)': "Random: 9 nodes, Sparse (20%) - DP Included",
-        
-        'Medium Random G(30,0.2)': "Random: 30 nodes, Low density (20%)",
-        'Medium Dense G(40,0.3)': "Random: 40 nodes, Medium density (30%)", 
-        'Large Sparse G(60,0.1)': "Random: 60 nodes, Sparse (10%)",
-        'Dense Graph G(35,0.4)': "Random: 35 nodes, Dense (40%)",
-        'Karate Club': "Real-World: 34 nodes, Social Network",
-        'Complete K(12)': "Complete: 12 nodes, Fully Connected",
-    }
-    # ------------------------------------------
-    
-    algorithms = ["Welsh-Powell", "D-Satur", "Simulated Annealing", "Dynamic Programming"]
-    
-    for graph_name, G in graphs_to_test.items():
-        print(f"  Processing {graph_name}...")
-        
-        # Get description (fallback if missing)
-        desc = graph_descriptions.get(graph_name, f"{G.number_of_nodes()} nodes, {G.number_of_edges()} edges")
-
-        for algo in algorithms:
-            result = test_algorithm_on_graph(G, algo)
-            if result['error'] is None:
-                metrics = compute_all_metrics(
-                    G, result['coloring'], algo, 
-                    result.get('time', 0.0),
-                    result.get('memory_mb', 0.0)
-                )
-                metrics['graph_name'] = graph_name
-                metrics['graph_description'] = desc  # --- UPDATED: Add description to metrics ---
-                regular_results.append(metrics)
-            else:
-                print(f"    Warning: {algo} failed on {graph_name}: {result['error']}")
-    
-    # Generate edge case results
-    print("\nGenerating edge case results...")
-    edge_case_results = []
-    edge_cases = generate_edge_case_graphs()
-    
-    for ec_name, G in edge_cases.items():
-        print(f"  Processing {ec_name}...")
-        ec_data = {
-            'graph_name': ec_name,
-            'graph_nodes': G.number_of_nodes(),
-            'graph_edges': G.number_of_edges(),
-            'error': None,
-            'has_errors': False,
-            'wp_colors': 0,
-            'ds_colors': 0,
-            'sa_colors': 0,
-            'dp_colors': 0,
-        }
-        
-        try:
-            wp_result = test_algorithm_on_graph(G, "Welsh-Powell")
-            if wp_result['error']:
-                ec_data['error'] = wp_result['error']
-            else:
-                ec_data['wp_colors'] = wp_result['num_colors']
-                ec_data['has_errors'] = sum(1 for u, v in G.edges() if wp_result['coloring'].get(u) == wp_result['coloring'].get(v)) > 0
-            
-            ds_result = test_algorithm_on_graph(G, "D-Satur")
-            if not ds_result['error']:
-                ec_data['ds_colors'] = ds_result['num_colors']
-            
-            sa_result = test_algorithm_on_graph(G, "Simulated Annealing")
-            if not sa_result['error']:
-                ec_data['sa_colors'] = sa_result['num_colors']
-            
-            if G.number_of_nodes() <= 15:  # DP only for small graphs
-                dp_result = test_algorithm_on_graph(G, "Dynamic Programming")
-                if not dp_result['error']:
-                    ec_data['dp_colors'] = dp_result['num_colors']
-        
-        except Exception as e:
-            ec_data['error'] = str(e)
-        
-        edge_case_results.append(ec_data)
-    
-    # Generate 3D data
-    print("\nGenerating 3D scalability data...")
-    data_3d = generate_3d_data()
-    
-    # Generate HTML
-    print("\nGenerating HTML dashboard...")
-    results_data = {
-        'regular': regular_results,
-        'edge_cases': edge_case_results,
-        '3d': data_3d
-    }
-    
-    html_content = generate_advanced_html(results_data)
-    
-    # Save HTML
-    os.makedirs('results', exist_ok=True)
-    output_path = 'results/dashboard_advanced.html'
-    
-    with open(output_path, 'w') as f:
-        f.write(html_content)
-    
-    print("\n" + "=" * 80)
-    print(f"✓ Dashboard saved to: {os.path.abspath(output_path)}")
-    print("=" * 80)
-    print("\n📊 Features included:")
-    print("  ✓ 15+ interactive visualizations")
-    print("  ✓ 5 tabbed interface (Overview, Analysis, 3D, Edge Cases, Metrics)")
-    print("  ✓ 3D scatter plots showing algorithm scalability")
-    print("  ✓ 12+ edge case analysis with special graphs")
-    print("  ✓ Heatmaps, box plots, distribution analysis")
-    print("  ✓ Color imbalance, conflict, and efficiency tracking")
-    print("  ✓ Responsive design (works on mobile, tablet, desktop)")
-    print("  ✓ Detailed metrics table with 10 columns")
-    print("\n🌐 Open in any browser:")
-    print(f"  - Chrome/Edge: {os.path.abspath(output_path)}")
-    print(f"  - Firefox: {os.path.abspath(output_path)}")
-    print(f"  - Safari: {os.path.abspath(output_path)}")
-    print("=" * 80)
-
-
-if __name__ == "__main__":
-    main()

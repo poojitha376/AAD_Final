@@ -286,6 +286,7 @@ def generate_html_dashboard(results_data: dict) -> str:
                 <thead>
                     <tr>
                         <th>Graph</th>
+                        <th>Description</th>
                         <th>Algorithm</th>
                         <th>Colors</th>
                         <th>Conflicts</th>
@@ -310,6 +311,10 @@ def generate_html_dashboard(results_data: dict) -> str:
     <script>
         const resultsData = """ + json.dumps(results_data) + """;
         
+        // Create a map for descriptions: { 'Petersen': 'Benchmark...', ... }
+        const graphDescMap = {};
+        resultsData.forEach(r => graphDescMap[r.graph_name] = r.graph_description);
+
         // Function to organize data by metric
         function getDataByMetric(metric) {
             const data = {};
@@ -328,10 +333,11 @@ def generate_html_dashboard(results_data: dict) -> str:
             resultsData.forEach(r => graphs.add(r.graph_name));
             return Array.from(graphs);
         }
+
+        const graphNames = getGraphNames();
         
         // Plot 1: Colors Used
         const colorsByAlgo = getDataByMetric('num_colors');
-        const graphNames = getGraphNames();
         
         const colorsTrace = [];
         Object.keys(colorsByAlgo).forEach((algo, idx) => {
@@ -339,7 +345,10 @@ def generate_html_dashboard(results_data: dict) -> str:
                 name: algo,
                 x: graphNames,
                 y: colorsByAlgo[algo],
-                type: 'bar'
+                type: 'bar',
+                // Add description to hover text
+                text: graphNames.map(name => graphDescMap[name]), 
+                hovertemplate: '<b>%{x}</b><br>%{text}<br>Colors: %{y}<extra></extra>'
             });
         });
         
@@ -359,7 +368,10 @@ def generate_html_dashboard(results_data: dict) -> str:
                 x: graphNames,
                 y: timeByAlgo[algo],
                 type: 'scatter',
-                mode: 'lines+markers'
+                mode: 'lines+markers',
+                // Add description to hover text
+                text: graphNames.map(name => graphDescMap[name]),
+                hovertemplate: '<b>%{x}</b><br>%{text}<br>Time: %{y:.2f} ms<extra></extra>'
             });
         });
         
@@ -419,6 +431,7 @@ def generate_html_dashboard(results_data: dict) -> str:
             
             row.innerHTML = `
                 <td>${result.graph_name}</td>
+                <td style="font-size: 0.85em; color: #666;">${result.graph_description}</td>
                 <td><span class="algorithm-label algo-${result.algorithm.includes('Welsh') ? 'wp' : result.algorithm.includes('D-Satur') ? 'ds' : result.algorithm.includes('Simulated') ? 'sa' : 'dp'}">${result.algorithm}</span></td>
                 <td class="metric-value">${result.num_colors}</td>
                 <td>${result.conflicts}</td>
@@ -451,6 +464,7 @@ def create_dashboard():
     
     results = []
     
+    # Define Graphs
     graphs = {
         'Petersen': nx.petersen_graph(),
         'Karate Club': load_karate_graph(),
@@ -458,8 +472,19 @@ def create_dashboard():
         'Complete K(5)': nx.complete_graph(5),
     }
     
+    # Define Descriptions for each graph
+    graph_descriptions = {
+        'Petersen': "Benchmark: 10 nodes, 15 edges (Tricky)",
+        'Karate Club': "Real-World: 34 nodes, Social Network",
+        'Random G(20,0.3)': "Synthetic: 20 nodes, Random Connections",
+        'Complete K(5)': "Sanity Check: 5 nodes, Fully Connected",
+    }
+    
     for graph_name, G in graphs.items():
         print(f"  Processing {graph_name}...")
+        
+        # Get description (fallback to generic info if key missing)
+        desc = graph_descriptions.get(graph_name, f"{G.number_of_nodes()} nodes, {G.number_of_edges()} edges")
         
         # Welsh-Powell
         import time
@@ -468,6 +493,7 @@ def create_dashboard():
         elapsed = (time.perf_counter() - start) * 1000
         m = compute_all_metrics(G, c, 'Welsh-Powell', elapsed)
         m['graph_name'] = graph_name
+        m['graph_description'] = desc
         results.append(m)
         
         # D-Satur
@@ -476,6 +502,7 @@ def create_dashboard():
         elapsed = (time.perf_counter() - start) * 1000
         m = compute_all_metrics(G, c, 'D-Satur', elapsed)
         m['graph_name'] = graph_name
+        m['graph_description'] = desc
         results.append(m)
         
         # Simulated Annealing
@@ -483,6 +510,7 @@ def create_dashboard():
         c, k, _, elapsed_s = simulated_annealing(G, 5, seed=42)
         m = compute_all_metrics(G, c, 'Simulated Annealing', elapsed_s * 1000)
         m['graph_name'] = graph_name
+        m['graph_description'] = desc
         results.append(m)
         
         # DP if small
@@ -493,6 +521,7 @@ def create_dashboard():
             if k_opt:
                 m = compute_all_metrics(G, c_opt, 'Dynamic Programming', elapsed, k_opt)
                 m['graph_name'] = graph_name
+                m['graph_description'] = desc
                 results.append(m)
     
     # Generate HTML
