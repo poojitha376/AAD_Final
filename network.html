@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5G Network Frequency Planner (Graph Coloring Demo)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: rgba(30, 41, 59, 0.9);
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-purple: #8b5cf6;
+            --grid-line: #1e293b;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #e2e8f0;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER */
+        header {
+            background: linear-gradient(90deg, #0f172a, #1e293b);
+            padding: 15px 30px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            font-size: 24px;
+            color: var(--accent-cyan);
+            text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-badge {
+            background: #334155;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+            min-width: 120px;
+            text-align: center;
+        }
+
+        /* MAIN LAYOUT */
+        .container {
+            flex: 1;
+            display: flex;
+            position: relative;
+        }
+
+        /* MAP AREA */
+        #map-area {
+            flex: 1;
+            position: relative;
+            cursor: crosshair;
+            background-image: 
+                linear-gradient(var(--grid-line) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* HUD OVERLAY */
+        .hud-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #475569;
+            width: 280px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .hud-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #475569;
+            padding-bottom: 5px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            background: #334155;
+            height: 6px;
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #1e293b;
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 6px;
+            text-transform: uppercase;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            background: var(--accent-cyan);
+            color: #000;
+            box-shadow: 0 0 15px var(--accent-cyan);
+        }
+
+        .btn-reset {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+        .btn-reset:hover {
+            background: #ef4444;
+            color: white;
+            box-shadow: 0 0 15px #ef4444;
+        }
+
+        /* METRICS PANEL */
+        .metrics-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: var(--panel-bg);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #475569;
+            display: flex;
+            gap: 20px;
+        }
+
+        .metric {
+            text-align: center;
+        }
+        .metric-val {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            color: white;
+            font-weight: bold;
+        }
+        .metric-label {
+            font-size: 10px;
+            color: #94a3b8;
+            text-transform: uppercase;
+        }
+
+        /* Tooltip */
+        .instruction {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.6);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            pointer-events: none;
+            color: #94a3b8;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1><i class="fa-solid fa-tower-broadcast"></i> 5G Freq. Planner</h1>
+        <div class="status-badge" id="algo-status">SYSTEM IDLE</div>
+    </header>
+
+    <div class="container">
+        <div id="map-area">
+            <canvas id="netCanvas"></canvas>
+            <div class="instruction">Click anywhere to deploy a 5G Tower</div>
+        </div>
+
+        <!-- CONTROL PANEL -->
+        <div class="hud-panel">
+            <div class="hud-title">Configuration</div>
+            
+            <div class="control-group">
+                <label>Signal Radius (Interference Range)</label>
+                <input type="range" id="radiusRange" min="50" max="200" value="100">
+            </div>
+
+            <div class="hud-title">Optimization</div>
+            <button class="btn" onclick="runOptimization()">
+                <i class="fa-solid fa-microchip"></i> Optimize Network
+            </button>
+            <button class="btn btn-reset" onclick="resetMap()">
+                <i class="fa-solid fa-trash"></i> Clear Map
+            </button>
+
+            <div style="margin-top: 20px; font-size: 11px; color: #64748b; line-height: 1.4;">
+                <strong style="color:var(--accent-cyan)">Strategy:</strong> Hybrid Approach.
+                <br><br>
+                1. <strong>DSatur:</strong> Rapidly assigns valid frequencies.<br>
+                2. <strong>SA Refinement:</strong> Optimizes to reduce total bandwidth usage.
+            </div>
+        </div>
+
+        <!-- METRICS -->
+        <div class="metrics-panel">
+            <div class="metric">
+                <div class="metric-val" id="towerCount">0</div>
+                <div class="metric-label">Active Towers</div>
+            </div>
+            <div class="metric" style="border-left: 1px solid #475569; padding-left: 20px;">
+                <div class="metric-val" id="freqCount" style="color: var(--accent-cyan)">0</div>
+                <div class="metric-label">Freq. Bands Used</div>
+            </div>
+            <div class="metric" style="border-left: 1px solid #475569; padding-left: 20px;">
+                <div class="metric-val" id="conflictCount" style="color: var(--accent-red)">0</div>
+                <div class="metric-label">Interferences</div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const canvas = document.getElementById('netCanvas');
+    const ctx = canvas.getContext('2d');
+    const towerCountEl = document.getElementById('towerCount');
+    const freqCountEl = document.getElementById('freqCount');
+    const conflictCountEl = document.getElementById('conflictCount');
+    const algoStatus = document.getElementById('algo-status');
+    const radiusInput = document.getElementById('radiusRange');
+
+    // State
+    let towers = [];
+    let SIGNAL_RADIUS = 100;
+    
+    // Tech Colors (Frequency Bands)
+    const BANDS = [
+        "#06b6d4", // Band 1 (Cyan)
+        "#8b5cf6", // Band 2 (Purple)
+        "#10b981", // Band 3 (Green)
+        "#f59e0b", // Band 4 (Amber)
+        "#ef4444", // Band 5 (Red)
+        "#ec4899", // Band 6 (Pink)
+        "#d946ef", // Band 7 (Fuchsia)
+        "#84cc16"  // Band 8 (Lime)
+    ];
+
+    class Tower {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.band = null; // Color
+            this.neighbors = [];
+            this.degree = 0;
+        }
+    }
+
+    // Init
+    function resize() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+        draw();
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Interaction
+    canvas.addEventListener('mousedown', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        addTower(x, y);
+    });
+
+    radiusInput.addEventListener('input', (e) => {
+        SIGNAL_RADIUS = parseInt(e.target.value);
+        updateGraphConnections();
+        draw(); // Redraw ranges
+        algoStatus.innerText = "CONFIG CHANGED";
+        algoStatus.style.color = "#f59e0b";
+        algoStatus.style.borderColor = "#f59e0b";
+        
+        // Reset colors as graph changed
+        towers.forEach(t => t.band = null);
+        freqCountEl.innerText = "-";
+        conflictCountEl.innerText = "-";
+    });
+
+    function addTower(x, y) {
+        towers.push(new Tower(x, y));
+        updateGraphConnections();
+        
+        // Visual Feedback
+        towers.forEach(t => t.band = null); // Reset colors on new add
+        freqCountEl.innerText = "PENDING";
+        conflictCountEl.innerText = "PENDING";
+        algoStatus.innerText = "NEW TOWER";
+        
+        towerCountEl.innerText = towers.length;
+        draw();
+    }
+
+    function resetMap() {
+        towers = [];
+        towerCountEl.innerText = 0;
+        freqCountEl.innerText = 0;
+        conflictCountEl.innerText = 0;
+        algoStatus.innerText = "SYSTEM IDLE";
+        algoStatus.style.color = "#10b981";
+        algoStatus.style.borderColor = "#10b981";
+        draw();
+    }
+
+    function updateGraphConnections() {
+        // Reset neighbors
+        towers.forEach(t => t.neighbors = []);
+        
+        // Find interference (edges)
+        for (let i = 0; i < towers.length; i++) {
+            for (let j = i + 1; j < towers.length; j++) {
+                const dist = Math.hypot(towers[i].x - towers[j].x, towers[i].y - towers[j].y);
+                if (dist < SIGNAL_RADIUS * 1.5) {
+                    towers[i].neighbors.push(towers[j]);
+                    towers[j].neighbors.push(towers[i]);
+                }
+            }
+        }
+        // Update degrees
+        towers.forEach(t => t.degree = t.neighbors.length);
+    }
+
+    // --- RENDERING ---
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 1. Draw Signal Ranges (Circles)
+        towers.forEach(t => {
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, SIGNAL_RADIUS * 0.75, 0, Math.PI * 2);
+            ctx.fillStyle = t.band !== null ? BANDS[t.band] + "20" : "#ffffff10"; 
+            ctx.fill();
+            ctx.strokeStyle = t.band !== null ? BANDS[t.band] + "40" : "#ffffff20";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        });
+
+        // 2. Draw Interference Lines (Edges)
+        ctx.setLineDash([5, 5]);
+        towers.forEach(t => {
+            t.neighbors.forEach(n => {
+                ctx.beginPath();
+                ctx.moveTo(t.x, t.y);
+                ctx.lineTo(n.x, n.y);
+                ctx.strokeStyle = "#ef444450"; // Faint red dashed
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+        });
+        ctx.setLineDash([]);
+
+        // 3. Draw Towers (Nodes)
+        towers.forEach(t => {
+            if (t.band !== null) {
+                ctx.shadowColor = BANDS[t.band];
+                ctx.shadowBlur = 20;
+            }
+
+            ctx.beginPath();
+            ctx.arc(t.x, t.y, 8, 0, Math.PI * 2);
+            ctx.fillStyle = "#1e293b";
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = t.band !== null ? BANDS[t.band] : "#94a3b8";
+            ctx.stroke();
+
+            // Icon
+            ctx.beginPath();
+            ctx.moveTo(t.x, t.y - 4);
+            ctx.lineTo(t.x - 3, t.y + 2);
+            ctx.lineTo(t.x + 3, t.y + 2);
+            ctx.closePath();
+            ctx.fillStyle = t.band !== null ? BANDS[t.band] : "#94a3b8";
+            ctx.fill();
+
+            ctx.shadowBlur = 0; 
+        });
+    }
+
+    // ==========================================
+    // HYBRID ALGORITHM IMPLEMENTATION
+    // ==========================================
+
+    async function runOptimization() {
+        if(towers.length === 0) return;
+
+        // PHASE 1: DSATUR (Initialization)
+        // --------------------------------
+        algoStatus.innerText = "PHASE 1: DSATUR (INIT)";
+        algoStatus.style.color = "#06b6d4";
+        algoStatus.style.borderColor = "#06b6d4";
+
+        towers.forEach(t => t.band = null);
+        let uncolored = [...towers];
+        
+        while(uncolored.length > 0) {
+            // DSatur Logic: Sort by Saturation Degree, then Static Degree
+            uncolored.sort((a, b) => {
+                const satA = getSaturation(a);
+                const satB = getSaturation(b);
+                if (satA !== satB) return satB - satA; // Max Saturation first
+                return b.degree - a.degree;            // Max Degree tie-breaker
+            });
+
+            const node = uncolored.shift();
+            node.band = getLowestBand(node);
+            
+            draw();
+            await new Promise(r => setTimeout(r, 60)); // Fast animation
+        }
+
+        updateMetrics();
+
+        // PHASE 2: SIMULATED ANNEALING (Refinement)
+        // -----------------------------------------
+        // Tries to reduce the max band used by "shaking" the solution
+        await runSARefinement();
+    }
+
+    async function runSARefinement() {
+        algoStatus.innerText = "PHASE 2: SA REFINEMENT";
+        algoStatus.style.color = "#8b5cf6"; // Purple for SA
+        algoStatus.style.borderColor = "#8b5cf6";
+
+        let currentMaxBand = Math.max(...towers.map(t => t.band));
+        let temp = 1.0;
+        const coolingRate = 0.95;
+        const iterations = 50; 
+
+        // Try to eliminate the highest band used
+        for(let i=0; i<iterations; i++) {
+            if (temp < 0.1) break;
+
+            // Pick a random tower
+            const tower = towers[Math.floor(Math.random() * towers.length)];
+            const oldBand = tower.band;
+            
+            // Propose a random NEW band that is LOWER than current max if possible
+            const newBand = Math.floor(Math.random() * (currentMaxBand + 1));
+
+            if (oldBand === newBand) continue;
+
+            // Calculate Cost (Conflicts + Weight of Band Index)
+            // We want 0 conflicts AND lower band indices
+            const currentCost = countConflicts() + (oldBand * 0.1);
+            
+            // Tentative Move
+            tower.band = newBand;
+            const newCost = countConflicts() + (newBand * 0.1);
+            
+            const delta = newCost - currentCost;
+
+            // Metropolis Acceptance Criterion (The Heart of SA)
+            if (delta < 0 || Math.random() < Math.exp(-delta / temp)) {
+                // Accept move
+                if(i % 5 === 0) {
+                    draw();
+                    await new Promise(r => setTimeout(r, 20)); // Jitter animation
+                }
+            } else {
+                // Reject move
+                tower.band = oldBand;
+            }
+
+            temp *= coolingRate;
+        }
+
+        updateMetrics();
+        algoStatus.innerText = "OPTIMIZATION COMPLETE";
+        algoStatus.style.color = "#10b981";
+        algoStatus.style.borderColor = "#10b981";
+    }
+
+    function getSaturation(node) {
+        const neighborColors = new Set(node.neighbors.map(n => n.band).filter(c => c !== null));
+        return neighborColors.size;
+    }
+
+    function getLowestBand(node) {
+        const neighborColors = new Set(node.neighbors.map(n => n.band));
+        let band = 0;
+        while(neighborColors.has(band)) {
+            band++;
+        }
+        return band;
+    }
+
+    function countConflicts() {
+        let c = 0;
+        towers.forEach(t => {
+            t.neighbors.forEach(n => {
+                if (t.band !== null && t.band === n.band) c++;
+            });
+        });
+        return c;
+    }
+
+    function updateMetrics() {
+        const bandsUsed = new Set(towers.map(t => t.band)).size;
+        freqCountEl.innerText = bandsUsed;
+        const conflicts = countConflicts() / 2; // Edges counted twice
+        conflictCountEl.innerText = Math.floor(conflicts);
+    }
+
+</script>
+</body>
+</html>
