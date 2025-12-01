@@ -1,0 +1,33 @@
+dataset,algorithm,colors,time,valid
+Myciel3 (Triangle-free),Welsh-Powell,4,3.0459003028227016e-05,True
+Myciel3 (Triangle-free),DSatur,4,3.2255997211905196e-05,True
+Myciel3 (Triangle-free),Simulated Annealing,4,0.40478011799859814,True
+Myciel3 (Triangle-free),Dynamic Programming,4,0.0003840789977402892,True
+Myciel3 (Triangle-free),Hybrid DSatur+SA,4,0.03935420599736972,True
+Myciel3 (Triangle-free),Hybrid WP+SA,4,0.05310197500148206,True
+Myciel3 (Triangle-free),Hybrid Tabu,4,0.02626160200088634,True
+Myciel3 (Triangle-free),Adaptive Hybrid,4,5.294199945637956e-05,True
+Queen 5 (5-colorable),Welsh-Powell,7,4.7351997636724263e-05,True
+Queen 5 (5-colorable),DSatur,5,8.539400005247444e-05,True
+Queen 5 (5-colorable),Simulated Annealing,5,1.658553724999365,True
+Queen 5 (5-colorable),Dynamic Programming,5,0.0002669560017238837,True
+Queen 5 (5-colorable),Hybrid DSatur+SA,5,0.17316180299894768,True
+Queen 5 (5-colorable),Hybrid WP+SA,6,0.22930535699924803,True
+Queen 5 (5-colorable),Hybrid Tabu,5,0.9327366890029225,True
+Queen 5 (5-colorable),Adaptive Hybrid,5,0.10579077600050368,True
+Karate Club,Welsh-Powell,5,4.003000140073709e-05,True
+Karate Club,DSatur,5,0.00010794300033012405,True
+Karate Club,Simulated Annealing,5,1.1591159060008067,True
+Karate Club,Dynamic Programming,5,0.0015945409977575764,True
+Karate Club,Hybrid DSatur+SA,5,0.11728390800271882,True
+Karate Club,Hybrid WP+SA,5,0.15459650100092404,True
+Karate Club,Hybrid Tabu,5,0.33024702700276976,True
+Karate Club,Adaptive Hybrid,5,0.16457913400154212,True
+Exam Scheduling,Welsh-Powell,2,1.9268998585175723e-05,True
+Exam Scheduling,DSatur,2,1.5574998542433605e-05,True
+Exam Scheduling,Simulated Annealing,2,0.1886305629996059,True
+Exam Scheduling,Dynamic Programming,2,1.9400002202019095e-05,True
+Exam Scheduling,Hybrid DSatur+SA,2,0.017011697000270942,True
+Exam Scheduling,Hybrid WP+SA,2,0.02644566799790482,True
+Exam Scheduling,Hybrid Tabu,2,3.15630022669211e-05,True
+Exam Scheduling,Adaptive Hybrid,2,2.8130001737736166e-05,True

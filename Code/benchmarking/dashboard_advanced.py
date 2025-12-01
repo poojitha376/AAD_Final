@@ -12,6 +12,7 @@ import sys
 import os
 import json
 import math
+import csv
 from datetime import datetime
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -148,6 +149,298 @@ def generate_3d_data():
                     data_3d[algo]['z'].append(result['num_colors'])
     
     return data_3d
+
+
+def load_dataset_results():
+    """Load results from your_datasets_results.csv"""
+    csv_path = os.path.join(os.path.dirname(__file__), '..', 'results', 'data', 'your_datasets_results.csv')
+    
+    if not os.path.exists(csv_path):
+        return None
+    
+    results = []
+    with open(csv_path, 'r') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            results.append({
+                'dataset': row['dataset'],
+                'algorithm': row['algorithm'],
+                'colors': int(row['colors']),
+                'time': float(row['time']),
+                'valid': row['valid'] == 'True'
+            })
+    
+    # Organize by dataset
+    datasets = {}
+    algorithms = set()
+    
+    for r in results:
+        dataset = r['dataset']
+        algorithm = r['algorithm']
+        algorithms.add(algorithm)
+        
+        if dataset not in datasets:
+            datasets[dataset] = {}
+        
+        datasets[dataset][algorithm] = {
+            'colors': r['colors'],
+            'time': r['time'],
+            'valid': r['valid']
+        }
+    
+    return {
+        'raw_results': results,
+        'datasets': datasets,
+        'algorithms': sorted(list(algorithms)),
+        'dataset_names': list(datasets.keys())
+    }
+
+
+def generate_datasets_tab_content(dataset_results):
+    """Generate HTML content for the datasets tab."""
+    datasets = dataset_results['datasets']
+    algorithms = dataset_results['algorithms']
+    dataset_names = dataset_results['dataset_names']
+    raw_results = dataset_results['raw_results']
+    
+    # Prepare data for overall comparison charts
+    colors_data = []
+    time_data = []
+    for algo in algorithms:
+        colors_data.append({
+            'x': dataset_names,
+            'y': [datasets[ds].get(algo, {}).get('colors', 0) for ds in dataset_names],
+            'name': algo,
+            'type': 'bar'
+        })
+        time_data.append({
+            'x': dataset_names,
+            'y': [datasets[ds].get(algo, {}).get('time', 0) * 1000 for ds in dataset_names],
+            'name': algo,
+            'type': 'bar'
+        })
+    
+    # Algorithm summary stats
+    algo_stats = {}
+    for algo in algorithms:
+        colors_list = []
+        times_list = []
+        for ds in dataset_names:
+            if algo in datasets[ds]:
+                colors_list.append(datasets[ds][algo]['colors'])
+                times_list.append(datasets[ds][algo]['time'])
+        
+        if colors_list:
+            algo_stats[algo] = {
+                'avg_colors': sum(colors_list) / len(colors_list),
+                'avg_time': sum(times_list) / len(times_list),
+                'min_colors': min(colors_list),
+                'max_colors': max(colors_list)
+            }
+    
+    best_avg_colors = min(s['avg_colors'] for s in algo_stats.values()) if algo_stats else 0
+    
+    html = f"""
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">{len(algorithms)}</div>
+                    <div class="stat-label">Algorithms Tested</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{len(dataset_names)}</div>
+                    <div class="stat-label">Real Datasets</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{len(raw_results)}</div>
+                    <div class="stat-label">Total Tests</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{sum(1 for r in raw_results if r['valid'])}/{len(raw_results)}</div>
+                    <div class="stat-label">Valid Colorings</div>
+                </div>
+            </div>
+            
+            <h2 style="color: #667eea; font-size: 1.8em; margin: 30px 0 20px 0; padding-bottom: 10px; border-bottom: 3px solid #667eea;">
+                🎯 Algorithm Comparison Across Your Datasets
+            </h2>
+            
+            <div class="dashboard-grid">
+                <div class="chart-container">
+                    <h3>Colors Used by Algorithm</h3>
+                    <div id="dataset-colors-comparison"></div>
+                </div>
+                <div class="chart-container">
+                    <h3>Execution Time by Algorithm (ms, log scale)</h3>
+                    <div id="dataset-time-comparison"></div>
+                </div>
+            </div>
+            
+            <h2 style="color: #667eea; font-size: 1.8em; margin: 30px 0 20px 0; padding-bottom: 10px; border-bottom: 3px solid #667eea;">
+                📊 Individual Dataset Results
+            </h2>
+            
+            <div class="dashboard-grid">
+"""
+    
+    # Add individual dataset charts
+    for i, ds_name in enumerate(dataset_names):
+        ds_data = datasets[ds_name]
+        html += f"""
+                <div class="chart-container">
+                    <h3>🗂️ {ds_name}</h3>
+                    <div id="dataset-{i}-chart"></div>
+                </div>
+"""
+    
+    html += """
+            </div>
+            
+            <h2 style="color: #667eea; font-size: 1.8em; margin: 30px 0 20px 0; padding-bottom: 10px; border-bottom: 3px solid #667eea;">
+                📋 Algorithm Performance Summary
+            </h2>
+            
+            <div class="chart-container">
+                <table class="metrics-table">
+                    <thead>
+                        <tr>
+                            <th>Algorithm</th>
+                            <th>Avg Colors</th>
+                            <th>Min Colors</th>
+                            <th>Max Colors</th>
+                            <th>Avg Time (ms)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+"""
+    
+    for algo in sorted(algorithms):
+        if algo in algo_stats:
+            stats = algo_stats[algo]
+            color_class = 'best' if abs(stats['avg_colors'] - best_avg_colors) < 0.01 else ''
+            html += f"""
+                        <tr>
+                            <td><strong>{algo}</strong></td>
+                            <td class="{color_class}">{stats['avg_colors']:.2f}</td>
+                            <td>{stats['min_colors']}</td>
+                            <td>{stats['max_colors']}</td>
+                            <td>{stats['avg_time']*1000:.4f}</td>
+                        </tr>
+"""
+    
+    html += """
+                    </tbody>
+                </table>
+            </div>
+            
+            <h2 style="color: #667eea; font-size: 1.8em; margin: 30px 0 20px 0; padding-bottom: 10px; border-bottom: 3px solid #667eea;">
+                📝 Complete Results Table
+            </h2>
+            
+            <div class="chart-container">
+                <table class="metrics-table">
+                    <thead>
+                        <tr>
+                            <th>Dataset</th>
+                            <th>Algorithm</th>
+                            <th>Colors</th>
+                            <th>Time (ms)</th>
+                            <th>Valid</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+"""
+    
+    for r in raw_results:
+        valid_icon = '✓' if r['valid'] else '✗'
+        valid_class = 'best' if r['valid'] else 'worst'
+        html += f"""
+                        <tr>
+                            <td>{r['dataset']}</td>
+                            <td><strong>{r['algorithm']}</strong></td>
+                            <td>{r['colors']}</td>
+                            <td>{r['time']*1000:.4f}</td>
+                            <td class="{valid_class}">{valid_icon}</td>
+                        </tr>
+"""
+    
+    html += f"""
+                    </tbody>
+                </table>
+            </div>
+            
+            <script>
+                // Overall Colors Comparison
+                var datasetColorsData = {json.dumps(colors_data)};
+                var datasetColorsLayout = {{
+                    barmode: 'group',
+                    xaxis: {{ title: 'Dataset' }},
+                    yaxis: {{ title: 'Number of Colors' }},
+                    legend: {{ orientation: 'h', y: -0.2 }},
+                    margin: {{ t: 20, b: 100 }}
+                }};
+                Plotly.newPlot('dataset-colors-comparison', datasetColorsData, datasetColorsLayout, {{responsive: true}});
+                
+                // Overall Time Comparison
+                var datasetTimeData = {json.dumps(time_data)};
+                var datasetTimeLayout = {{
+                    barmode: 'group',
+                    xaxis: {{ title: 'Dataset' }},
+                    yaxis: {{ title: 'Time (ms)', type: 'log' }},
+                    legend: {{ orientation: 'h', y: -0.2 }},
+                    margin: {{ t: 20, b: 100 }}
+                }};
+                Plotly.newPlot('dataset-time-comparison', datasetTimeData, datasetTimeLayout, {{responsive: true}});
+"""
+    
+    # Add individual dataset charts
+    for i, ds_name in enumerate(dataset_names):
+        ds_data = datasets[ds_name]
+        algos = list(ds_data.keys())
+        colors_vals = [ds_data[a]['colors'] for a in algos]
+        times_vals = [ds_data[a]['time'] * 1000 for a in algos]
+        
+        html += f"""
+                
+                // {ds_name} - Combined chart
+                var ds{i}Data = [
+                    {{
+                        x: {json.dumps(algos)},
+                        y: {json.dumps(colors_vals)},
+                        name: 'Colors',
+                        type: 'bar',
+                        marker: {{ color: '#667eea' }}
+                    }},
+                    {{
+                        x: {json.dumps(algos)},
+                        y: {json.dumps(times_vals)},
+                        name: 'Time (ms)',
+                        type: 'bar',
+                        yaxis: 'y2',
+                        marker: {{ color: '#764ba2' }}
+                    }}
+                ];
+                var ds{i}Layout = {{
+                    title: '',
+                    xaxis: {{ title: 'Algorithm' }},
+                    yaxis: {{ title: 'Colors', side: 'left' }},
+                    yaxis2: {{
+                        title: 'Time (ms)',
+                        overlaying: 'y',
+                        side: 'right',
+                        type: 'log'
+                    }},
+                    margin: {{ t: 20, b: 100, l: 60, r: 60 }},
+                    showlegend: true,
+                    legend: {{ orientation: 'h', y: -0.3 }}
+                }};
+                Plotly.newPlot('dataset-{i}-chart', ds{i}Data, ds{i}Layout, {{responsive: true}});
+"""
+    
+    html += """
+            </script>
+"""
+    
+    return html
 
 
 def generate_advanced_html(results_data):
@@ -419,6 +712,7 @@ def generate_advanced_html(results_data):
         
         <div class="tabs">
             <button class="tab-button active" onclick="openTab(event, 'overview')">📊 Overview</button>
+            <button class="tab-button" onclick="openTab(event, 'datasets')">🗂️ Your Datasets</button>
             <button class="tab-button" onclick="openTab(event, 'analysis')">📈 Analysis</button>
             <button class="tab-button" onclick="openTab(event, '3d')">🔮 3D Analysis</button>
             <button class="tab-button" onclick="openTab(event, 'edge-cases')">⚠️ Edge Cases</button>
@@ -470,6 +764,11 @@ def generate_advanced_html(results_data):
                     <div id="achroChart"></div>
                 </div>
             </div>
+        </div>
+        
+        <!-- DATASETS TAB -->
+        <div id="datasets" class="tab-content">
+            DATASETS_CONTENT_PLACEHOLDER
         </div>
         
         <div id="analysis" class="tab-content">
@@ -1030,6 +1329,16 @@ def generate_advanced_html(results_data):
 </body>
 </html>
 """
+    
+    # Load and inject dataset results if available
+    dataset_results = load_dataset_results()
+    if dataset_results:
+        datasets_html = generate_datasets_tab_content(dataset_results)
+        html = html.replace('DATASETS_CONTENT_PLACEHOLDER', datasets_html)
+    else:
+        html = html.replace('DATASETS_CONTENT_PLACEHOLDER', 
+                           '<div style="padding: 40px; text-align: center;"><h2>No dataset results found</h2><p>Run <code>python3 run_on_your_data.py</code> to generate results.</p></div>')
+    
     return html
 
 

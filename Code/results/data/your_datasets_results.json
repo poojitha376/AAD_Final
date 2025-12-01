@@ -1,0 +1,474 @@
+[
+  {
+    "algorithm": "Welsh-Powell",
+    "colors": 4,
+    "time": 3.0459003028227016e-05,
+    "valid": true,
+    "stats": {},
+    "dataset": "Myciel3 (Triangle-free)"
+  },
+  {
+    "algorithm": "DSatur",
+    "colors": 4,
+    "time": 3.2255997211905196e-05,
+    "valid": true,
+    "stats": {},
+    "dataset": "Myciel3 (Triangle-free)"
+  },
+  {
+    "algorithm": "Simulated Annealing",
+    "colors": 4,
+    "time": 0.40478011799859814,
+    "valid": true,
+    "stats": {
+      "initial_colors": 4,
+      "final_conflicts": 0
+    },
+    "dataset": "Myciel3 (Triangle-free)"
+  },
+  {
+    "algorithm": "Dynamic Programming",
+    "colors": 4,
+    "time": 0.0003840789977402892,
+    "valid": true,
+    "stats": {
+      "exact_chromatic_number": 4,
+      "method": "backtracking"
+    },
+    "dataset": "Myciel3 (Triangle-free)"
+  },
+  {
+    "algorithm": "Hybrid DSatur+SA",
+    "colors": 4,
+    "time": 0.03935420599736972,
+    "valid": true,
+    "stats": {
+      "dsatur_colors": 4,
+      "sa_iterations": 5000,
+      "total_sa_runs": 1,
+      "final_colors": 4,
+      "reduction": 0
+    },
+    "dataset": "Myciel3 (Triangle-free)"
+  },
+  {
+    "algorithm": "Hybrid WP+SA",
+    "colors": 4,
+    "time": 0.05310197500148206,
+    "valid": true,
+    "stats": {
+      "wp_colors": 4,
+      "sa_iterations": 10000,
+      "total_sa_runs": 1,
+      "final_colors": 4,
+      "reduction": 0
+    },
+    "dataset": "Myciel3 (Triangle-free)"
+  },
+  {
+    "algorithm": "Hybrid Tabu",
+    "colors": 4,
+    "time": 0.02626160200088634,
+    "valid": true,
+    "stats": {
+      "initial_colors": 4,
+      "tabu_iterations": 1000,
+      "total_tabu_runs": 1,
+      "detailed_stats": [
+        {
+          "target_colors": 3,
+          "success": false,
+          "iterations": 1000
+        }
+      ],
+      "final_colors": 4,
+      "reduction": 0
+    },
+    "dataset": "Myciel3 (Triangle-free)"
+  },
+  {
+    "algorithm": "Adaptive Hybrid",
+    "colors": 4,
+    "time": 5.294199945637956e-05,
+    "valid": true,
+    "stats": {
+      "selected_algorithm": "dynamic_programming",
+      "graph_characteristics": {
+        "num_nodes": 11,
+        "num_edges": 20,
+        "density": 0.36363636363636365,
+        "density_category": "dense",
+        "avg_degree": 3.6363636363636362,
+        "max_degree": 5,
+        "size_category": "tiny"
+      },
+      "algorithm_params": {},
+      "method": "greedy_dsatur_fallback",
+      "num_colors": 4
+    },
+    "dataset": "Myciel3 (Triangle-free)"
+  },
+  {
+    "algorithm": "Welsh-Powell",
+    "colors": 7,
+    "time": 4.7351997636724263e-05,
+    "valid": true,
+    "stats": {},
+    "dataset": "Queen 5 (5-colorable)"
+  },
+  {
+    "algorithm": "DSatur",
+    "colors": 5,
+    "time": 8.539400005247444e-05,
+    "valid": true,
+    "stats": {},
+    "dataset": "Queen 5 (5-colorable)"
+  },
+  {
+    "algorithm": "Simulated Annealing",
+    "colors": 5,
+    "time": 1.658553724999365,
+    "valid": true,
+    "stats": {
+      "initial_colors": 5,
+      "final_conflicts": 0
+    },
+    "dataset": "Queen 5 (5-colorable)"
+  },
+  {
+    "algorithm": "Dynamic Programming",
+    "colors": 5,
+    "time": 0.0002669560017238837,
+    "valid": true,
+    "stats": {
+      "exact_chromatic_number": 5,
+      "method": "backtracking"
+    },
+    "dataset": "Queen 5 (5-colorable)"
+  },
+  {
+    "algorithm": "Hybrid DSatur+SA",
+    "colors": 5,
+    "time": 0.17316180299894768,
+    "valid": true,
+    "stats": {
+      "dsatur_colors": 5,
+      "sa_iterations": 5068,
+      "total_sa_runs": 1,
+      "final_colors": 5,
+      "reduction": 0
+    },
+    "dataset": "Queen 5 (5-colorable)"
+  },
+  {
+    "algorithm": "Hybrid WP+SA",
+    "colors": 6,
+    "time": 0.22930535699924803,
+    "valid": true,
+    "stats": {
+      "wp_colors": 7,
+      "sa_iterations": 11034,
+      "total_sa_runs": 2,
+      "final_colors": 6,
+      "reduction": 1
+    },
+    "dataset": "Queen 5 (5-colorable)"
+  },
+  {
+    "algorithm": "Hybrid Tabu",
+    "colors": 5,
+    "time": 0.9327366890029225,
+    "valid": true,
+    "stats": {
+      "initial_colors": 7,
+      "tabu_iterations": 1090,
+      "total_tabu_runs": 3,
+      "detailed_stats": [
+        {
+          "target_colors": 6,
+          "success": true,
+          "iterations": 34
+        },
+        {
+          "target_colors": 5,
+          "success": true,
+          "iterations": 51
+        },
+        {
+          "target_colors": 4,
+          "success": false,
+          "iterations": 1005
+        }
+      ],
+      "final_colors": 5,
+      "reduction": 2
+    },
+    "dataset": "Queen 5 (5-colorable)"
+  },
+  {
+    "algorithm": "Adaptive Hybrid",
+    "colors": 5,
+    "time": 0.10579077600050368,
+    "valid": true,
+    "stats": {
+      "selected_algorithm": "hybrid_dsatur_sa",
+      "graph_characteristics": {
+        "num_nodes": 25,
+        "num_edges": 160,
+        "density": 0.5333333333333333,
+        "density_category": "dense",
+        "avg_degree": 12.8,
+        "max_degree": 16,
+        "size_category": "small"
+      },
+      "algorithm_params": {
+        "T0": 10.0,
+        "alpha": 0.95,
+        "max_iterations": 30000,
+        "stall_limit": 3000,
+        "aggressive": true
+      },
+      "dsatur_colors": 5,
+      "sa_iterations": 3068,
+      "total_sa_runs": 1,
+      "final_colors": 5,
+      "reduction": 0,
+      "num_colors": 5
+    },
+    "dataset": "Queen 5 (5-colorable)"
+  },
+  {
+    "algorithm": "Welsh-Powell",
+    "colors": 5,
+    "time": 4.003000140073709e-05,
+    "valid": true,
+    "stats": {},
+    "dataset": "Karate Club"
+  },
+  {
+    "algorithm": "DSatur",
+    "colors": 5,
+    "time": 0.00010794300033012405,
+    "valid": true,
+    "stats": {},
+    "dataset": "Karate Club"
+  },
+  {
+    "algorithm": "Simulated Annealing",
+    "colors": 5,
+    "time": 1.1591159060008067,
+    "valid": true,
+    "stats": {
+      "initial_colors": 5,
+      "final_conflicts": 0
+    },
+    "dataset": "Karate Club"
+  },
+  {
+    "algorithm": "Dynamic Programming",
+    "colors": 5,
+    "time": 0.0015945409977575764,
+    "valid": true,
+    "stats": {
+      "exact_chromatic_number": 5,
+      "method": "backtracking"
+    },
+    "dataset": "Karate Club"
+  },
+  {
+    "algorithm": "Hybrid DSatur+SA",
+    "colors": 5,
+    "time": 0.11728390800271882,
+    "valid": true,
+    "stats": {
+      "dsatur_colors": 5,
+      "sa_iterations": 5064,
+      "total_sa_runs": 1,
+      "final_colors": 5,
+      "reduction": 0
+    },
+    "dataset": "Karate Club"
+  },
+  {
+    "algorithm": "Hybrid WP+SA",
+    "colors": 5,
+    "time": 0.15459650100092404,
+    "valid": true,
+    "stats": {
+      "wp_colors": 5,
+      "sa_iterations": 10595,
+      "total_sa_runs": 1,
+      "final_colors": 5,
+      "reduction": 0
+    },
+    "dataset": "Karate Club"
+  },
+  {
+    "algorithm": "Hybrid Tabu",
+    "colors": 5,
+    "time": 0.33024702700276976,
+    "valid": true,
+    "stats": {
+      "initial_colors": 5,
+      "tabu_iterations": 1003,
+      "total_tabu_runs": 1,
+      "detailed_stats": [
+        {
+          "target_colors": 4,
+          "success": false,
+          "iterations": 1003
+        }
+      ],
+      "final_colors": 5,
+      "reduction": 0
+    },
+    "dataset": "Karate Club"
+  },
+  {
+    "algorithm": "Adaptive Hybrid",
+    "colors": 5,
+    "time": 0.16457913400154212,
+    "valid": true,
+    "stats": {
+      "selected_algorithm": "hybrid_tabu",
+      "graph_characteristics": {
+        "num_nodes": 34,
+        "num_edges": 78,
+        "density": 0.13903743315508021,
+        "density_category": "medium",
+        "avg_degree": 4.588235294117647,
+        "max_degree": 17,
+        "size_category": "small"
+      },
+      "algorithm_params": {
+        "tabu_tenure": 10,
+        "max_iterations": 5000,
+        "stall_limit": 500,
+        "aggressive": true
+      },
+      "initial_colors": 5,
+      "tabu_iterations": 503,
+      "total_tabu_runs": 1,
+      "detailed_stats": [
+        {
+          "target_colors": 4,
+          "success": false,
+          "iterations": 503
+        }
+      ],
+      "final_colors": 5,
+      "reduction": 0,
+      "num_colors": 5
+    },
+    "dataset": "Karate Club"
+  },
+  {
+    "algorithm": "Welsh-Powell",
+    "colors": 2,
+    "time": 1.9268998585175723e-05,
+    "valid": true,
+    "stats": {},
+    "dataset": "Exam Scheduling"
+  },
+  {
+    "algorithm": "DSatur",
+    "colors": 2,
+    "time": 1.5574998542433605e-05,
+    "valid": true,
+    "stats": {},
+    "dataset": "Exam Scheduling"
+  },
+  {
+    "algorithm": "Simulated Annealing",
+    "colors": 2,
+    "time": 0.1886305629996059,
+    "valid": true,
+    "stats": {
+      "initial_colors": 2,
+      "final_conflicts": 0
+    },
+    "dataset": "Exam Scheduling"
+  },
+  {
+    "algorithm": "Dynamic Programming",
+    "colors": 2,
+    "time": 1.9400002202019095e-05,
+    "valid": true,
+    "stats": {
+      "exact_chromatic_number": 2,
+      "method": "backtracking"
+    },
+    "dataset": "Exam Scheduling"
+  },
+  {
+    "algorithm": "Hybrid DSatur+SA",
+    "colors": 2,
+    "time": 0.017011697000270942,
+    "valid": true,
+    "stats": {
+      "dsatur_colors": 2,
+      "sa_iterations": 5000,
+      "total_sa_runs": 1,
+      "final_colors": 2,
+      "reduction": 0
+    },
+    "dataset": "Exam Scheduling"
+  },
+  {
+    "algorithm": "Hybrid WP+SA",
+    "colors": 2,
+    "time": 0.02644566799790482,
+    "valid": true,
+    "stats": {
+      "wp_colors": 2,
+      "sa_iterations": 10000,
+      "total_sa_runs": 1,
+      "final_colors": 2,
+      "reduction": 0
+    },
+    "dataset": "Exam Scheduling"
+  },
+  {
+    "algorithm": "Hybrid Tabu",
+    "colors": 2,
+    "time": 3.15630022669211e-05,
+    "valid": true,
+    "stats": {
+      "initial_colors": 2,
+      "tabu_iterations": 1,
+      "total_tabu_runs": 1,
+      "detailed_stats": [
+        {
+          "target_colors": 1,
+          "success": false,
+          "iterations": 1
+        }
+      ],
+      "final_colors": 2,
+      "reduction": 0
+    },
+    "dataset": "Exam Scheduling"
+  },
+  {
+    "algorithm": "Adaptive Hybrid",
+    "colors": 2,
+    "time": 2.8130001737736166e-05,
+    "valid": true,
+    "stats": {
+      "selected_algorithm": "dynamic_programming",
+      "graph_characteristics": {
+        "num_nodes": 4,
+        "num_edges": 3,
+        "density": 0.5,
+        "density_category": "dense",
+        "avg_degree": 1.5,
+        "max_degree": 2,
+        "size_category": "tiny"
+      },
+      "algorithm_params": {},
+      "method": "greedy_dsatur_fallback",
+      "num_colors": 2
+    },
+    "dataset": "Exam Scheduling"
+  }
+]
