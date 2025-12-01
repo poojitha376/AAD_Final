@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐦 Flappy Graphs - Fly and Color!</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen active">
+        <div class="screen-content">
+            <h1 class="game-title">🐦 Flappy Graphs</h1>
+            <p class="subtitle">Fly and Color!</p>
+            
+            <div class="rules-container">
+                <h2>How to Play</h2>
+                <ul class="rules-list">
+                    <li>Click or tap to make the bird jump</li>
+                    <li>Your bird's color changes every few seconds</li>
+                    <li>Fly through colored gaps in the walls</li>
+                    <li><strong>Important:</strong> Can't pass through the same color twice in a row!</li>
+                    <li>Each successful pass earns points with combo bonuses</li>
+                    <li>You have 3 lives - avoid walls and color conflicts</li>
+                    <li>Try to beat your high score!</li>
+                </ul>
+            </div>
+            
+            <button id="start-btn" class="game-btn primary-btn">Start Game</button>
+            <button id="leaderboard-btn" class="game-btn secondary-btn">View Leaderboard</button>
+        </div>
+    </div>
+
+    <!-- Leaderboard Screen -->
+    <div id="leaderboard-screen" class="screen">
+        <div class="screen-content">
+            <h1 class="game-title">Leaderboard</h1>
+            <div id="leaderboard-list" class="leaderboard-list"></div>
+            <button id="back-from-leaderboard-btn" class="game-btn secondary-btn">Back</button>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen">
+        <!-- HUD (Heads-Up Display) -->
+        <div id="hud" class="hud">
+            <div class="hud-item">
+                <span class="hud-label">Score:</span>
+                <span id="score-display" class="hud-value">0</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">High Score:</span>
+                <span id="high-score-display" class="hud-value">0</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">Lives:</span>
+                <span id="lives-display" class="hud-value">❤️❤️❤️</span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">Bird Color:</span>
+                <span id="bird-color-display" class="bird-color-indicator"></span>
+            </div>
+            <div class="hud-item">
+                <span class="hud-label">Combo:</span>
+                <span id="combo-display" class="hud-value">0x</span>
+            </div>
+        </div>
+
+        <!-- Game Canvas -->
+        <canvas id="game-canvas"></canvas>
+
+        <!-- Pause Button -->
+        <button id="pause-btn" class="game-btn icon-btn">II</button>
+    </div>
+
+    <!-- Pause Screen -->
+    <div id="pause-screen" class="screen overlay">
+        <div class="screen-content overlay-content">
+            <h1 class="game-title">Paused</h1>
+            <button id="resume-btn" class="game-btn primary-btn">Resume</button>
+            <button id="restart-from-pause-btn" class="game-btn secondary-btn">Restart</button>
+            <button id="quit-btn" class="game-btn secondary-btn">Main Menu</button>
+        </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="game-over-screen" class="screen overlay">
+        <div class="screen-content overlay-content game-over-content">
+            <div class="sad-bird-container">
+                <div class="sad-bird">
+                    <div class="bird-body"></div>
+                    <div class="bird-eye"></div>
+                    <div class="bird-tear"></div>
+                    <div class="bird-beak"></div>
+                </div>
+            </div>
+            <h1 class="game-over-title">GAME OVER</h1>
+            <p class="try-again-msg">Better luck next time!</p>
+            <div class="stats-container game-over-stats">
+                <div class="stat-item big-stat">
+                    <span class="stat-label">Final Score</span>
+                    <span id="final-score" class="stat-value big-value">0</span>
+                </div>
+                <div class="stat-row">
+                    <div class="stat-item">
+                        <span class="stat-label">High Score</span>
+                        <span id="final-high-score" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Max Combo</span>
+                        <span id="max-combo" class="stat-value">0x</span>
+                    </div>
+                </div>
+                <div id="new-high-score-msg" class="new-high-score hidden">
+                    NEW HIGH SCORE!
+                </div>
+            </div>
+            <div class="game-over-buttons">
+                <button id="restart-btn" class="game-btn primary-btn">Try Again</button>
+                <button id="menu-btn" class="game-btn secondary-btn">Main Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
